@@ -2,3 +2,16 @@ name = "autoshine"
 compatibility_date = "2026-10-29"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./public"
+
+[vars]
+APPLE_CALDAV_URL = "https://caldav.icloud.com/"
+APPLE_USERNAME = "jake_c_farmer@rocketmail.com"
+APPLE_CALENDAR_NAME = "Work"
+EMAIL_FROM = "Jake <jake@auto-shine.co.uk>"
+EMAIL_TO = "jake@auto-shine.co.uk"
+APPLE_TIMEZONE = "Europe/London"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "auto-shine-bookings"
+database_id = "188cfd20-c2f1-46ea-8627-ca840a3787e8"

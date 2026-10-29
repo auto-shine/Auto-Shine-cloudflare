@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AutoShine Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#0f1115; color:#fff; }
+    table { width:100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border:1px solid #2a3747; padding: 12px; text-align:left; }
+    button { padding: 8px 12px; border:none; border-radius: 6px; cursor: pointer; }
+    .approve { background:#2fbf71; color:white; }
+    .decline { background:#d64545; color:white; }
+  </style>
+</head>
+<body>
+  <h1>Booking Requests</h1>
+  <div id="bookings"></div>
+
+  <script>
+    async function loadBookings() {
+      const res = await fetch('/api/admin/bookings?status=pending');
+      const data = await res.json();
+      const container = document.getElementById('bookings');
+
+      if (!data.bookings || !data.bookings.length) {
+        container.innerHTML = '<p>No pending bookings.</p>';
+        return;
+      }
+
+      const table = `
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Service</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Price</th>
+              <th>Phone</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.bookings.map(row => `
+              <tr>
+                <td>${row.customer_name}</td>
+                <td>${row.service_name}</td>
+                <td>${row.booking_date}</td>
+                <td>${row.booking_time}</td>
+                <td>£${row.total_price}</td>
+                <td>${row.phone}</td>
+                <td>
+                  <button class="approve" data-id="${row.id}">Approve</button>
+                  <button class="decline" data-id="${row.id}">Decline</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = table;
+
+      document.querySelectorAll('.approve').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await fetch('/api/admin/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bookingId: btn.dataset.id })
+          });
+          loadBookings();
+        });
+      });
+    }
+
+    loadBookings();
+  </script>
+</body>
+</html>
