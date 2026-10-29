@@ -194,6 +194,3 @@ main { display: block; }
 .next-avail-dot{width:9px;height:9px;border-radius:50%;background:#34d399;box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:next-avail-pulse 2s infinite}
 @keyframes next-avail-pulse{70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
 @media (prefers-reduced-motion:reduce){.next-avail-dot{animation:none}}
-
-/* Footer: services links */
-.as-footer-services{width:100%;border-top:1px solid rgba(255,255,255,.05);padding:30px 0 10px;margin-top:10px}
