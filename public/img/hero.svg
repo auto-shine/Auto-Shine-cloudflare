@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1">
+      <stop offset="0%" stop-color="#0b223b" />
+      <stop offset="50%" stop-color="#1c75bc" />
+      <stop offset="100%" stop-color="#0d1117" />
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)" />
+  <circle cx="1230" cy="200" r="220" fill="rgba(255,255,255,0.08)" />
+  <circle cx="1110" cy="330" r="120" fill="rgba(255,255,255,0.06)" />
+  <rect x="110" y="140" width="500" height="220" rx="18" fill="rgba(0,0,0,0.25)" />
+  <text x="150" y="240" font-size="52" font-family="Arial" font-weight="700" fill="white">AutoShine</text>
+  <text x="150" y="300" font-size="28" font-family="Arial" fill="#dfeaf7">Mobile Detailing</text>
+</svg>
