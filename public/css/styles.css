@@ -25,22 +25,15 @@ body {
   line-height: 1.6;
 }
 
-a {
-  text-decoration: none;
-}
-
-img {
-  max-width: 100%;
-  display: block;
-}
-
+a { text-decoration: none; }
+img { max-width: 100%; display: block; }
 .container {
   width: min(1100px, calc(100% - 32px));
   margin: 0 auto;
 }
 
 .site-header {
-  background: rgba(13, 17, 23, 0.9);
+  background: rgba(13,17,23,0.9);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -78,8 +71,8 @@ img {
 
 .eyebrow {
   display: inline-block;
-  background: rgba(28, 117, 188, 0.18);
-  border: 1px solid rgba(28, 117, 188, 0.3);
+  background: rgba(28,117,188,0.18);
+  border: 1px solid rgba(28,117,188,0.3);
   color: #8fc7ff;
   padding: 8px 16px;
   border-radius: 999px;
@@ -223,20 +216,8 @@ button {
 }
 
 @media (max-width: 600px) {
-  .nav {
-    gap: 12px;
-  }
-
-  .hero {
-    min-height: 500px;
-  }
-
-  .actions {
-    flex-direction: column;
-  }
-
-  .btn {
-    width: 100%;
-    text-align: center;
-  }
+  .nav { gap: 12px; }
+  .hero { min-height: 500px; }
+  .actions { flex-direction: column; }
+  .btn { width: 100%; text-align: center; }
 }

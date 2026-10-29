@@ -5,5 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler pages dev ./public"
+  },
+  "devDependencies": {
+    "wrangler": "^4.156.0"
   }
 }
