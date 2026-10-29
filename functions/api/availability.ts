@@ -29,12 +29,11 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
   const postcode = String(payload.postcode ?? params.postcode ?? '').trim();
   const size = String(payload.size ?? params.size ?? '').trim().toUpperCase();
   const serviceCode = String(payload.service ?? payload.serviceCode ?? params.service ?? params.serviceCode ?? '').trim().toUpperCase();
-  const date = String(payload.date ?? payload.selectedDate ?? params.date ?? params.selectedDate ?? '').trim();
   const selectedExtras = parseAddons(payload.addons ?? payload.selectedExtras ?? params.addons ?? params.selectedExtras ?? []);
   const zone = String(payload.zone ?? detectZone(postcode) ?? '') || detectZone(postcode);
 
-  if (!postcode || !size || !serviceCode || !date) {
-    return Response.json({ error: 'Missing fields' }, { status: 400 });
+  if (!postcode || !size || !serviceCode) {
+    return Response.json({ error: 'Missing postcode, size or service' }, { status: 400 });
   }
 
   const resolvedSize = (['S', 'M', 'L'].includes(size) ? size : 'M') as Size;
