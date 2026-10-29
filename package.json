@@ -1,12 +1,17 @@
 {
-  "name": "autoshine-cloudflare",
-  "private": true,
+  "name": "auto-shine-booking",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
+  "description": "Postcode-priced booking system for AutoShine that reads and writes an iCloud (Apple) calendar",
   "scripts": {
-    "dev": "wrangler pages dev ./public"
+    "test": "node --test \"test/*.test.js\"",
+    "test-email": "node scripts/send-test-email.mjs"
   },
-  "devDependencies": {
-    "wrangler": "^4.156.0"
+  "dependencies": {
+    "tsdav": "^2.1.5"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
