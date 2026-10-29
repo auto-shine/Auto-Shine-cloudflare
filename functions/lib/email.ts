@@ -1,15 +1,18 @@
-export async function sendEmail({
-  to,
-  from,
-  subject,
-  html
-}: {
-  to: string;
-  from: string;
-  subject: string;
-  html: string;
-}) {
-  const apiKey = (globalThis as any).process?.env?.RESEND_API_KEY || '';
+export async function sendEmail(
+  {
+    to,
+    from,
+    subject,
+    html
+  }: {
+    to: string;
+    from: string;
+    subject: string;
+    html: string;
+  },
+  apiKeyOverride?: string
+) {
+  const apiKey = apiKeyOverride || (globalThis as any).process?.env?.RESEND_API_KEY || '';
 
   if (!apiKey) {
     console.warn('RESEND_API_KEY missing; skipping email.');
