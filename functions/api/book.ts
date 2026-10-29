@@ -5,88 +5,90 @@ export const onRequest: PagesFunction = async ({ request, env, waitUntil }) => {
   try {
     const body = await request.json();
 
-    const required = [
-      'postcode',
-      'size',
-      'serviceCode',
-      'selectedDate',
-      'selectedTime',
-      'customerName',
-      'phone',
-      'email',
-      'carDetails'
-    ];
+    const postcode = String(body.postcode || '').trim();
+    const size = String(body.size || '').trim().toUpperCase();
+    const serviceCode = String(body.service || body.serviceCode || '').trim().toUpperCase();
+    const selectedDate = String(body.date || body.selectedDate || '').trim();
+    const selectedTime = String(body.time || body.selectedTime || '').trim();
+    const customerName = String(body.name || body.customerName || '').trim();
+    const phone = String(body.phone || '').trim();
+    const email = String(body.email || '').trim();
+    const address = String(body.address || '').trim();
+    const vehicle = String(body.vehicle || body.carDetails || '').trim();
+    const notes = String(body.notes || '').trim();
+    const selectedExtras = Array.isArray(body.addons) ? body.addons : [];
 
-    for (const key of required) {
-      if (!body[key] || String(body[key]).trim() === '') {
-        return Response.json({ error: `Missing field: ${key}` }, { status: 400 });
-      }
+    if (!postcode || !size || !serviceCode || !selectedDate || !selectedTime || !customerName || !phone || !address) {
+      return Response.json({ error: 'Missing required booking fields' }, { status: 400 });
     }
 
-    const postcode = String(body.postcode).trim();
-    const size = String(body.size).toUpperCase();
-    const serviceCode = String(body.serviceCode).toUpperCase();
+    const normalisedSize = (['S', 'M', 'L'].includes(size) ? size : 'M') as Size;
+    const normalisedService = (['EFD', 'DCD', 'PC1', 'PC2', 'CC'].includes(serviceCode) ? serviceCode : 'EFD') as ServiceCode;
     const zone = detectZone(postcode);
 
-    if (!['S', 'M', 'L'].includes(size)) {
-      return Response.json({ error: 'Invalid size' }, { status: 400 });
-    }
-
-    if (!['EFD', 'DCD', 'PC1', 'PC2', 'CC'].includes(serviceCode)) {
-      return Response.json({ error: 'Invalid service' }, { status: 400 });
-    }
-
-    const selectedExtras = Array.isArray(body.extras) ? body.extras : [];
     const totalPrice = getTotalPrice({
-      serviceCode: serviceCode as ServiceCode,
-      size: size as Size,
+      serviceCode: normalisedService,
+      size: normalisedSize,
       zone,
       addons: selectedExtras
     });
 
-    const startDate = body.selectedDate;
-    const startTime = body.selectedTime;
-    const start = new Date(`${startDate}T${startTime}:00`);
-    const durationMinutes = getDurationMinutes(serviceCode as ServiceCode, size as Size);
-
+    const start = new Date(`${selectedDate}T${selectedTime}:00`);
+    const durationMinutes = getDurationMinutes(normalisedService, normalisedSize);
     const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
 
-    if (start.getTime() < Date.now() + 2 * 24 * 60 * 60 * 1000) {
-      return Response.json({ error: 'Bookings must be at least 2 days in advance.' }, { status: 400 });
-    }
-
     const bookingId = crypto.randomUUID();
-
     const db = env.DB;
+
     if (!db) {
       return Response.json({ error: 'Database not configured' }, { status: 500 });
     }
 
+    const carDetails = [vehicle, address].filter(Boolean).join(' | ');
+    const orderNotes = [notes, address].filter(Boolean).join(' | ');
+
     await db.prepare(`
       INSERT INTO bookings (
-        id, status, customer_name, phone, email, postcode, zone, car_details,
-        service_code, service_name, size, booking_date, booking_time,
-        booking_start, booking_end, total_price, notes, add_ons, created_at, updated_at
+        id,
+        status,
+        customer_name,
+        phone,
+        email,
+        postcode,
+        zone,
+        car_details,
+        service_code,
+        service_name,
+        size,
+        booking_date,
+        booking_time,
+        booking_start,
+        booking_end,
+        total_price,
+        notes,
+        add_ons,
+        created_at,
+        updated_at
       ) VALUES (
         ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now')
       )
     `).bind(
       bookingId,
-      body.customerName,
-      body.phone,
-      body.email,
+      customerName,
+      phone,
+      email || '',
       postcode,
       zone,
-      body.carDetails,
-      serviceCode,
-      SERVICE_DEFS[serviceCode].name,
-      size,
-      startDate,
-      startTime,
+      carDetails,
+      normalisedService,
+      SERVICE_DEFS[normalisedService].name,
+      normalisedSize,
+      selectedDate,
+      selectedTime,
       start.toISOString(),
       end.toISOString(),
       totalPrice,
-      body.notes || '',
+      orderNotes,
       JSON.stringify(selectedExtras)
     ).run();
 
@@ -95,33 +97,45 @@ export const onRequest: PagesFunction = async ({ request, env, waitUntil }) => {
 
     const emailHtml = `
       <h2>New booking request</h2>
-      <p><strong>Customer:</strong> ${body.customerName}</p>
-      <p><strong>Phone:</strong> ${body.phone}</p>
-      <p><strong>Email:</strong> ${body.email}</p>
-      <p><strong>Car:</strong> ${body.carDetails}</p>
+      <p><strong>Customer:</strong> ${customerName}</p>
+      <p><strong>Phone:</strong> ${phone}</p>
+      <p><strong>Email:</strong> ${email || 'Not provided'}</p>
+      <p><strong>Car:</strong> ${carDetails}</p>
       <p><strong>Postcode:</strong> ${postcode}</p>
       <p><strong>Zone:</strong> ${zone}</p>
-      <p><strong>Service:</strong> ${SERVICE_DEFS[serviceCode].name}</p>
-      <p><strong>Size:</strong> ${size}</p>
-      <p><strong>Date:</strong> ${startDate}</p>
-      <p><strong>Time:</strong> ${startTime}</p>
+      <p><strong>Service:</strong> ${SERVICE_DEFS[normalisedService].name}</p>
+      <p><strong>Size:</strong> ${normalisedSize}</p>
+      <p><strong>Date:</strong> ${selectedDate}</p>
+      <p><strong>Time:</strong> ${selectedTime}</p>
       <p><strong>Price:</strong> £${totalPrice}</p>
-      <p><strong>Notes:</strong> ${body.notes || 'None'}</p>
+      <p><strong>Notes:</strong> ${orderNotes || 'None'}</p>
       <p><strong>Add-ons:</strong> ${(selectedExtras.length ? selectedExtras.join(', ') : 'None')}</p>
-      <p>Approve or reject in the admin dashboard.</p>
     `;
 
-    await sendEmail({
-      to: adminEmail,
-      from,
-      subject: `New AutoShine booking request - ${body.customerName}`,
-      html: emailHtml
-    });
+    waitUntil(
+      sendEmail({
+        to: adminEmail,
+        from,
+        subject: `New AutoShine booking request - ${customerName}`,
+        html: emailHtml
+      }, env.RESEND_API_KEY)
+    );
 
     return Response.json({
       success: true,
-      bookingId,
-      message: 'Thanks for your booking request. We’ve received it and will contact you to confirm your appointment.'
+      booking: {
+        id: bookingId,
+        service: SERVICE_DEFS[normalisedService].name,
+        date: selectedDate,
+        time: selectedTime,
+        total: totalPrice,
+        isFrom: false,
+        days: 1,
+        lines: [
+          { label: SERVICE_DEFS[normalisedService].name, amount: totalPrice }
+        ]
+      },
+      whatsapp: 'https://wa.me/447999923651?text=' + encodeURIComponent('Hi Jake, I just booked a detail. Can you confirm the details?')
     });
   } catch (error: any) {
     return Response.json({ error: error.message || 'Booking failed' }, { status: 500 });
