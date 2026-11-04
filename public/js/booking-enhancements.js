@@ -1,43 +1,37 @@
 (() => {
   const NOTICE = 'Prices marked “from” are estimates. We’ll confirm the final price during booking confirmation; photos or an inspection may be needed.';
-  const qs = (selector) => document.querySelector(selector);
+  let autoSelected = false;
 
   function enhance() {
-    const serviceSection = document.getElementById('s-service');
-    const mainServices = document.getElementById('services');
-    const soloServices = document.getElementById('services-solo');
-    if (mainServices && soloServices) {
+    const section = document.getElementById('s-service');
+    const main = document.getElementById('services');
+    const solo = document.getElementById('services-solo');
+    if (main && solo) {
       for (const code of ['ENGINE', 'HL', 'HLUV']) {
-        const input = mainServices.querySelector(`input[name="service"][value="${code}"]`);
+        const input = main.querySelector(`input[name="service"][value="${code}"]`);
         const card = input && input.closest('label');
-        if (card && !soloServices.contains(card)) soloServices.appendChild(card);
+        if (card && !solo.contains(card)) solo.appendChild(card);
       }
-      if (!mainServices.querySelector('input[name="service"]:checked')) {
-        const firstService = mainServices.querySelector('input[name="service"]');
-        if (firstService) {
-          firstService.checked = true;
-          firstService.dispatchEvent(new Event('change', { bubbles: true }));
-        }
+      if (!autoSelected) {
+        const checked = document.querySelector('#services input[name="service"]:checked, #services-solo input[name="service"]:checked');
+        const firstPrimary = main.querySelector('input[name="service"]');
+        const firstStandalone = solo.querySelector('input[name="service"]');
+        const target = checked || firstPrimary || firstStandalone;
+        if (target && !target.checked) {
+          autoSelected = true;
+          target.checked = true;
+          target.dispatchEvent(new Event('change', { bubbles: true }));
+        } else if (target) autoSelected = true;
       }
     }
-    if (serviceSection && !serviceSection.querySelector('[data-pricing-notice]')) {
-      const note = document.createElement('p');
-      note.dataset.pricingNotice = 'true';
-      note.className = 'muted';
-      note.textContent = NOTICE;
-      serviceSection.appendChild(note);
+    if (section && !section.querySelector('[data-pricing-notice]')) {
+      const p = document.createElement('p'); p.dataset.pricingNotice = 'true'; p.className = 'muted'; p.textContent = NOTICE; section.appendChild(p);
     }
-    const completed = document.getElementById('s-done');
-    if (completed && !completed.hidden && completed.childElementCount && !completed.querySelector('[data-pricing-notice]')) {
-      const note = document.createElement('p');
-      note.dataset.pricingNotice = 'true';
-      note.className = 'muted';
-      note.textContent = NOTICE;
-      completed.appendChild(note);
+    const done = document.getElementById('s-done');
+    if (done && !done.hidden && done.childElementCount && !done.querySelector('[data-pricing-notice]')) {
+      const p = document.createElement('p'); p.dataset.pricingNotice = 'true'; p.className = 'muted'; p.textContent = NOTICE; done.appendChild(p);
     }
   }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enhance);
-  else enhance();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enhance); else enhance();
   new MutationObserver(enhance).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
 })();
