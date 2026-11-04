@@ -23,7 +23,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300..700;1,300..700&family=Oswald:wght@400;600;700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="/css/site.css">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"AutoShine","url":"https://www.auto-shine.co.uk"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"AutoShine","url":"https://www.auto-shine.co.uk"}</script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HN05H8ETGP"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -32,8 +33,23 @@
     gtag('js', new Date());
     gtag('config', 'G-HN05H8ETGP');
     gtag('config', 'AW-16467941872');
+
+    // WhatsApp Click Event Tracking
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('a[href*="wa.me"], a[href*="api.whatsapp.com"], a[href*="whatsapp"]').forEach(function(element) {
+        element.addEventListener('click', function() {
+          gtag('event', 'whatsapp_click', {
+            'event_category': 'Contact',
+            'event_label': 'WhatsApp Click',
+            'value': 1
+          });
+          gtag('event', 'conversion', {
+            'send_to': 'AW-16467941872'
+          });
+        });
+      });
+    });
   </script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HN05H8ETGP"></script>
   <meta name="trustpilot-one-time-domain-verification-id" content="4d72bc17-73f3-4342-8ce7-aeeefd1a979f"/>
 </head>
 <body class="page-index">
