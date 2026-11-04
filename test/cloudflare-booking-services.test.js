@@ -4,11 +4,12 @@ import { getBasePrice, getDurationMinutes, getTotalPrice, isVariablePrice } from
 
 const zones = ['Z1', 'Z2', 'Z3'];
 
-test('standalone headlight prices are zone-based and independent of vehicle size', () => {
+test('standalone engine bay and headlight prices are zone-based, from-priced, and size-independent', () => {
+  assert.deepEqual(zones.map((zone) => getBasePrice('ENGINE', 'S', zone)), [50, 60, 70]);
   assert.deepEqual(zones.map((zone) => getBasePrice('HL', 'S', zone)), [50, 60, 70]);
   assert.deepEqual(zones.map((zone) => getBasePrice('HLUV', 'S', zone)), [80, 90, 100]);
   for (const zone of zones) {
-    for (const code of ['HL', 'HLUV']) {
+    for (const code of ['ENGINE', 'HL', 'HLUV']) {
       const prices = ['S', 'M', 'L'].map((size) => getTotalPrice({ serviceCode: code, size, zone }));
       assert.deepEqual(prices, [prices[0], prices[0], prices[0]]);
       assert.equal(isVariablePrice(code), true);

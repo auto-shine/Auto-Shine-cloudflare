@@ -11,7 +11,7 @@ export const SERVICE_DEFS: Record<ServiceCode, ServiceDefinition> = {
   PC1: { name: 'Paint Correction Stage 1', duration: 360, summary: '6 hours' },
   PC2: { name: 'Paint Correction Stage 2', duration: 480, summary: 'Full day' },
   CC: { name: 'Ceramic Coating', duration: 480, summary: 'Full day' },
-  ENGINE: { name: 'Engine Bay Detail (stand-alone)', duration: 60, summary: '1 hour', flat: 50 },
+  ENGINE: { name: 'Engine Bay Detail (stand-alone)', duration: 60, summary: '1 hour', zonePrices: { Z1: 50, Z2: 60, Z3: 70 }, variable: true },
   HL: { name: 'Headlight Restoration (stand-alone, no UV)', duration: 90, summary: '1.5 hours', zonePrices: { Z1: 50, Z2: 60, Z3: 70 }, variable: true },
   HLUV: { name: 'Headlight Restoration + UV Coating (stand-alone)', duration: 120, summary: '2 hours', zonePrices: { Z1: 80, Z2: 90, Z3: 100 }, variable: true },
 };
@@ -53,7 +53,6 @@ export function getDurationMinutes(serviceCode: ServiceCode, size: Size) {
 }
 
 // Distance zones must be resolved from the full postcode with resolveZone in lib/zones.js.
-// This helper is retained for compatibility only and must not be used to calculate quotes.
 export function detectZone(_postcode: string): Zone {
   return 'Z1';
 }
@@ -68,7 +67,6 @@ export function getBasePrice(serviceCode: ServiceCode, size: Size, zone: Zone) {
 export function getTotalPrice({ serviceCode, size, zone, addons = [] }: {
   serviceCode: ServiceCode; size: Size; zone: Zone; addons?: string[];
 }) {
-  // Kept for legacy callers. Current booking API validates addon keys separately.
   let extra = 0;
   if (addons.includes('engine-bay') || addons.includes('engine')) extra += 35;
   if (addons.includes('headlight-restoration') || addons.includes('headlights')) extra += 40;
