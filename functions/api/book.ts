@@ -1,8 +1,13 @@
 import { resolveZone } from '../../lib/zones.js';
-import { getDurationMinutes, getTotalPrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking';
+import { getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking';
 import { sendEmail } from '../lib/email';
 
 const STANDALONE = new Set<ServiceCode>(['ENGINE', 'HL', 'HLUV']);
+const ADDON_PRICES: Record<string, number> = {
+  engine: 35, 'engine-bay': 35, headlights: 40, 'headlight-restoration': 40,
+  headlights_uv: 80, 'headlight-restoration-uv': 80, softtop: 50, 'soft-top': 50,
+};
+const PRICE_NOTICE = 'This is a starting price. We’ll confirm the final price during booking confirmation; photos or an inspection may be needed.';
 
 export const onRequest: PagesFunction = async ({ request, env, waitUntil }) => {
   try {
@@ -35,11 +40,12 @@ export const onRequest: PagesFunction = async ({ request, env, waitUntil }) => {
     if (!zoneInfo.zone) return Response.json({ error: 'That postcode is outside our online booking area. Please message Jake for a travel quote.' }, { status: 400 });
 
     const zone = zoneInfo.zone as Zone;
-    const totalPrice = getTotalPrice({ serviceCode, size, zone, addons: selectedExtras });
+    const addonTotal = selectedExtras.reduce((sum, addon) => sum + (ADDON_PRICES[addon] || 0), 0);
+    const totalPrice = getBasePrice(serviceCode, size, zone) + addonTotal;
+    const isFrom = isVariablePrice(serviceCode);
     const start = new Date(`${selectedDate}T${selectedTime}:00`);
     if (!Number.isFinite(start.getTime())) return Response.json({ error: 'Please choose a valid date and time.' }, { status: 400 });
-    const durationMinutes = getDurationMinutes(serviceCode, size);
-    const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+    const end = new Date(start.getTime() + getDurationMinutes(serviceCode, size) * 60 * 1000);
     const bookingId = crypto.randomUUID();
     const db = env.DB;
     if (!db) return Response.json({ error: 'Database not configured' }, { status: 500 });
@@ -67,9 +73,9 @@ export const onRequest: PagesFunction = async ({ request, env, waitUntil }) => {
       <p><strong>Car / address:</strong> ${carDetails}</p>
       <p><strong>Postcode:</strong> ${zoneInfo.postcode} (${zoneInfo.miles} miles; ${zone})</p>
       <p><strong>Service:</strong> ${SERVICE_DEFS[serviceCode].name}</p>
-      <p><strong>Size:</strong> ${STANDALONE.has(serviceCode) ? 'Not used for standalone pricing' : size}</p>
+      <p><strong>Size:</strong> ${STANDALONE.has(serviceCode) ? 'Does not affect standalone headlight pricing' : size}</p>
       <p><strong>Date and time:</strong> ${selectedDate} at ${selectedTime}</p>
-      <p><strong>Price:</strong> £${totalPrice}</p>
+      <p><strong>Starting price:</strong> £${totalPrice}${isFrom ? ' (final price to be confirmed; photos or inspection may be needed)' : ''}</p>
       <p><strong>Notes:</strong> ${orderNotes || 'None'}</p>
       <p><strong>Add-ons:</strong> ${selectedExtras.length ? selectedExtras.join(', ') : 'None'}</p>
     `;
@@ -84,8 +90,9 @@ export const onRequest: PagesFunction = async ({ request, env, waitUntil }) => {
       success: true,
       booking: {
         id: bookingId, service: SERVICE_DEFS[serviceCode].name, date: selectedDate,
-        time: selectedTime, total: totalPrice, isFrom: false, days: 1,
+        time: selectedTime, total: totalPrice, isFrom, days: 1,
         lines: [{ label: SERVICE_DEFS[serviceCode].name, amount: totalPrice }],
+        pricingNotice: isFrom ? PRICE_NOTICE : undefined,
       },
       whatsapp: 'https://wa.me/447999923651?text=' + encodeURIComponent('Hi Jake, I just booked a detail. Can you confirm the details?'),
     });

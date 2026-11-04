@@ -2,15 +2,18 @@ export type Zone = 'Z1' | 'Z2' | 'Z3';
 export type ServiceCode = 'EFD' | 'DCD' | 'PC1' | 'PC2' | 'CC' | 'ENGINE' | 'HL' | 'HLUV';
 export type Size = 'S' | 'M' | 'L';
 
-export const SERVICE_DEFS: Record<ServiceCode, { name: string; duration: number; summary: string; flat?: number }> = {
+type ZonePrices = Record<Zone, number>;
+type ServiceDefinition = { name: string; duration: number; summary: string; flat?: number; zonePrices?: ZonePrices; variable?: boolean };
+
+export const SERVICE_DEFS: Record<ServiceCode, ServiceDefinition> = {
   EFD: { name: 'Essential Full Detail', duration: 150, summary: '2–3 hours' },
   DCD: { name: 'Deep Clean Detail', duration: 240, summary: '3–6 hours' },
   PC1: { name: 'Paint Correction Stage 1', duration: 360, summary: '6 hours' },
   PC2: { name: 'Paint Correction Stage 2', duration: 480, summary: 'Full day' },
   CC: { name: 'Ceramic Coating', duration: 480, summary: 'Full day' },
   ENGINE: { name: 'Engine Bay Detail (stand-alone)', duration: 60, summary: '1 hour', flat: 50 },
-  HL: { name: 'Headlight Restoration (stand-alone)', duration: 90, summary: '1.5 hours', flat: 50 },
-  HLUV: { name: 'Headlight Restoration + UV Coating (stand-alone)', duration: 120, summary: '2 hours', flat: 100 },
+  HL: { name: 'Headlight Restoration (stand-alone, no UV)', duration: 90, summary: '1.5 hours', zonePrices: { Z1: 50, Z2: 60, Z3: 70 }, variable: true },
+  HLUV: { name: 'Headlight Restoration + UV Coating (stand-alone)', duration: 120, summary: '2 hours', zonePrices: { Z1: 80, Z2: 90, Z3: 100 }, variable: true },
 };
 
 export const PRICING: Record<Zone, Record<Exclude<ServiceCode, 'ENGINE' | 'HL' | 'HLUV'>, Record<Size, number>>> = {
@@ -29,7 +32,14 @@ export const PRICING: Record<Zone, Record<Exclude<ServiceCode, 'ENGINE' | 'HL' |
 };
 
 const STANDALONE: ServiceCode[] = ['ENGINE', 'HL', 'HLUV'];
-const BASE_SERVICES: ServiceCode[] = ['EFD', 'DCD', 'PC1', 'PC2', 'CC'];
+
+export function isStandaloneService(serviceCode: ServiceCode) {
+  return STANDALONE.includes(serviceCode);
+}
+
+export function isVariablePrice(serviceCode: ServiceCode) {
+  return Boolean(SERVICE_DEFS[serviceCode].variable);
+}
 
 export function isFullDay(serviceCode: ServiceCode) {
   return serviceCode === 'PC2' || serviceCode === 'CC';
@@ -38,35 +48,33 @@ export function isFullDay(serviceCode: ServiceCode) {
 export function getDurationMinutes(serviceCode: ServiceCode, size: Size) {
   const base = SERVICE_DEFS[serviceCode].duration;
   if (isFullDay(serviceCode)) return 480;
-  if (STANDALONE.includes(serviceCode)) return base;
+  if (isStandaloneService(serviceCode)) return base;
   return size === 'M' || size === 'L' ? base + 60 : base;
 }
 
-// Distance zoning is resolved server-side by /api/quote using postcodes.io.
-// This helper remains a compatibility default only; never use it for pricing.
+// Distance zones must be resolved from the full postcode with resolveZone in lib/zones.js.
+// This helper is retained for compatibility only and must not be used to calculate quotes.
 export function detectZone(_postcode: string): Zone {
   return 'Z1';
 }
 
 export function getBasePrice(serviceCode: ServiceCode, size: Size, zone: Zone) {
   const service = SERVICE_DEFS[serviceCode];
+  if (service.zonePrices) return service.zonePrices[zone];
   if (service.flat !== undefined) return service.flat;
   return PRICING[zone][serviceCode as Exclude<ServiceCode, 'ENGINE' | 'HL' | 'HLUV'>][size];
-}
-
-export function getAddonPrice(addons: string[] = []) {
-  let total = 0;
-  if (addons.includes('engine-bay')) total += 35;
-  if (addons.includes('headlight-restoration')) total += 40;
-  if (addons.includes('headlight-restoration-uv')) total += 80;
-  if (addons.includes('soft-top')) total += 50;
-  return total;
 }
 
 export function getTotalPrice({ serviceCode, size, zone, addons = [] }: {
   serviceCode: ServiceCode; size: Size; zone: Zone; addons?: string[];
 }) {
-  return getBasePrice(serviceCode, size, zone) + getAddonPrice(addons);
+  // Kept for legacy callers. Current booking API validates addon keys separately.
+  let extra = 0;
+  if (addons.includes('engine-bay') || addons.includes('engine')) extra += 35;
+  if (addons.includes('headlight-restoration') || addons.includes('headlights')) extra += 40;
+  if (addons.includes('headlight-restoration-uv') || addons.includes('headlights_uv')) extra += 80;
+  if (addons.includes('soft-top') || addons.includes('softtop')) extra += 50;
+  return getBasePrice(serviceCode, size, zone) + extra;
 }
 
 export function combineDateTime(date: string, time: string) {

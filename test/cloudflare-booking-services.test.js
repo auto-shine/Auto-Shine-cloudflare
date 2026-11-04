@@ -1,19 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getDurationMinutes, getTotalPrice } from '../functions/lib/booking.ts';
+import { getBasePrice, getDurationMinutes, getTotalPrice, isVariablePrice } from '../functions/lib/booking.ts';
 
-const ZONES = ['Z1', 'Z2', 'Z3'];
+const zones = ['Z1', 'Z2', 'Z3'];
 
-test('standalone headlight services vary by travel zone, not vehicle size', () => {
-  for (const zone of ZONES) {
-    const plain = ['S', 'M', 'L'].map((size) => getTotalPrice({ serviceCode: 'HL', size, zone }));
-    const uv = ['S', 'M', 'L'].map((size) => getTotalPrice({ serviceCode: 'HLUV', size, zone }));
-    assert.deepEqual(plain, [plain[0], plain[0], plain[0]]);
-    assert.deepEqual(uv, [uv[0], uv[0], uv[0]]);
-    assert.equal(uv[0] - plain[0], 30);
+test('standalone headlight prices are zone-based and independent of vehicle size', () => {
+  assert.deepEqual(zones.map((zone) => getBasePrice('HL', 'S', zone)), [50, 60, 70]);
+  assert.deepEqual(zones.map((zone) => getBasePrice('HLUV', 'S', zone)), [80, 90, 100]);
+  for (const zone of zones) {
+    for (const code of ['HL', 'HLUV']) {
+      const prices = ['S', 'M', 'L'].map((size) => getTotalPrice({ serviceCode: code, size, zone }));
+      assert.deepEqual(prices, [prices[0], prices[0], prices[0]]);
+      assert.equal(isVariablePrice(code), true);
+    }
   }
-  assert.deepEqual(ZONES.map((zone) => getTotalPrice({ serviceCode: 'HL', size: 'M', zone })), [50, 60, 70]);
-  assert.deepEqual(ZONES.map((zone) => getTotalPrice({ serviceCode: 'HLUV', size: 'M', zone })), [80, 90, 100]);
+  assert.equal(isVariablePrice('EFD'), false);
   assert.equal(getDurationMinutes('HL', 'S'), getDurationMinutes('HL', 'L'));
   assert.equal(getDurationMinutes('HLUV', 'S'), getDurationMinutes('HLUV', 'L'));
 });

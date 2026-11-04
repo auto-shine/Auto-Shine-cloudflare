@@ -1,5 +1,5 @@
 import { resolveZone } from '../../lib/zones.js';
-import { getDurationMinutes, getTotalPrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking';
+import { getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking';
 import { isSlotBooked } from '../lib/apple-caldav';
 
 const STANDALONE = new Set<ServiceCode>(['ENGINE', 'HL', 'HLUV']);
@@ -23,10 +23,8 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
   const postcode = String(payload.postcode ?? params.get('postcode') ?? '').trim();
   const sizeInput = String(payload.size ?? params.get('size') ?? '').trim().toUpperCase();
   const serviceCode = String(payload.service ?? payload.serviceCode ?? params.get('service') ?? params.get('serviceCode') ?? '').trim().toUpperCase() as ServiceCode;
-  const addons = parseAddons(payload.addons ?? payload.selectedExtras ?? params.get('addons') ?? params.get('selectedExtras') ?? []);
-  if (!postcode || !serviceCode || !SERVICE_DEFS[serviceCode]) {
-    return Response.json({ error: 'Please provide a valid postcode and service.' }, { status: 400 });
-  }
+  const selectedExtras = parseAddons(payload.addons ?? payload.selectedExtras ?? params.get('addons') ?? params.get('selectedExtras') ?? []);
+  if (!postcode || !serviceCode || !SERVICE_DEFS[serviceCode]) return Response.json({ error: 'Please provide a valid postcode and service.' }, { status: 400 });
   if (!sizeInput && !STANDALONE.has(serviceCode)) return Response.json({ error: 'Please select a vehicle size.' }, { status: 400 });
 
   const size = (['S', 'M', 'L'].includes(sizeInput) ? sizeInput : 'M') as Size;
@@ -64,10 +62,14 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
     if (times.length) days.push({ date: dateKey, times });
   }
 
-  const total = getTotalPrice({ serviceCode, size, zone, addons });
+  const total = getBasePrice(serviceCode, size, zone) + selectedExtras.reduce((sum: number, addon: string) => {
+    const prices: Record<string, number> = { engine: 35, 'engine-bay': 35, headlights: 40, 'headlight-restoration': 40, headlights_uv: 80, 'headlight-restoration-uv': 80, softtop: 50, 'soft-top': 50 };
+    return sum + (prices[addon] || 0);
+  }, 0);
   return Response.json({
     postcode: zoneInfo.postcode, zone, area: zoneInfo.area || zone, miles: zoneInfo.miles,
-    quote: { total, isFrom: false, service: SERVICE_DEFS[serviceCode].name, size, days: 1 },
+    quote: { total, isFrom: isVariablePrice(serviceCode), service: SERVICE_DEFS[serviceCode].name, size, days: 1 },
+    pricingNotice: 'Prices marked “from” are starting estimates. We’ll confirm your final price during booking confirmation; photos or an inspection may be needed.',
     days: 1, slots: days,
   });
 };
