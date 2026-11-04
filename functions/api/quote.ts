@@ -28,19 +28,24 @@ export const onRequest: PagesFunction = async ({ request }) => {
 
   const postcode = zoneInfo.postcode;
   if (!zoneInfo.zone) return Response.json({
-    outOfArea: true, postcode, miles: zoneInfo.miles,
+    outOfArea: true,
+    postcode,
+    miles: zoneInfo.miles,
     message: 'That postcode is outside our online booking area. Please message Jake for a travel quote.',
     whatsapp: 'https://wa.me/447999923651?text=' + encodeURIComponent(`Hi Jake, I’m in ${postcode} and would like a quote.`),
   });
 
   const zone = zoneInfo.zone as Zone;
-  if (!requestedSize) return Response.json({ postcode, area: zoneInfo.area || zone, zone, miles: zoneInfo.miles, sizes });
+  // The booking client stores this initial postcode response in state.info and
+  // needs addons before loadMenu() requests the size-specific menu.
+  if (!requestedSize) return Response.json({ postcode, area: zoneInfo.area || zone, zone, miles: zoneInfo.miles, sizes, addons });
+
   const size = (['S', 'M', 'L'].includes(requestedSize) ? requestedSize : 'M') as Size;
   const menu: Record<string, { label: string; price: number; isFrom: boolean }> = {};
-  for (const serviceCode of VALID_SERVICE_CODES) menu[serviceCode] = {
-    label: SERVICE_DEFS[serviceCode].name,
-    price: getBasePrice(serviceCode, size, zone),
-    isFrom: isVariablePrice(serviceCode),
+  for (const code of VALID_SERVICE_CODES) menu[code] = {
+    label: SERVICE_DEFS[code].name,
+    price: getBasePrice(code, size, zone),
+    isFrom: isVariablePrice(code),
   };
   return Response.json({ postcode, area: zoneInfo.area || zone, zone, miles: zoneInfo.miles, size, sizes, menu, addons, pricingNotice, standaloneServices: [...STANDALONE] });
 };

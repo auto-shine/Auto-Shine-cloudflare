@@ -691,10 +691,6 @@
       if (state.extras.includes('headlight-restoration-uv')) price += 80;
       if (state.extras.includes('soft-top')) price += 50;
 
-      if (document.getElementById('extra-dirt').checked) {
-        // user can manually adjust quote after approval; not auto-billing here
-      }
-
       state.totalPrice = price;
       document.getElementById('quote-preview').textContent = `£${price}`;
       document.getElementById('quote-subtext').textContent = `${state.serviceCode} • ${state.size} • ${state.zone}`;
@@ -720,6 +716,9 @@
           document.querySelectorAll('.service-option').forEach(el => el.classList.remove('active'));
           btn.classList.add('active');
           calcPrice();
+          if (state.currentStep === 3) {
+            setTimeout(() => nextStep(), 120);
+          }
         });
         list.appendChild(btn);
       });
@@ -734,8 +733,6 @@
         return;
       }
 
-      const day = new Date(`${state.selectedDate}T00:00:00`);
-      const dayName = day.toLocaleDateString('en-GB', { weekday: 'short' });
       const now = new Date();
       const dateString = state.selectedDate;
       const hours = [];
@@ -744,10 +741,7 @@
         const start = new Date(`${dateString}T${String(Math.floor(h)).padStart(2,'0')}:${String((h % 1) * 60).padStart(2,'0')}:00`);
         const end = new Date(start.getTime() + getServiceDuration(state.serviceCode, state.size) * 60 * 1000);
 
-        // avoid slot after 18:00
         if (start.getHours() + (getServiceDuration(state.serviceCode, state.size) / 60) > 18) continue;
-
-        // if date is today, block past times
         if (dateString === now.toISOString().slice(0,10) && start < now) continue;
 
         const label = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -761,7 +755,6 @@
       button.disabled = true;
       container.appendChild(button);
 
-      // Render four times initially
       hours.slice(0, 6).forEach(slot => {
         const btn = document.createElement('button');
         btn.type = 'button';
