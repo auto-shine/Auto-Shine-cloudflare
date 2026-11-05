@@ -44,6 +44,18 @@ export function getTotalPrice({ serviceCode, size, zone, addons = [] }: { servic
   const prices: Record<string, number> = { engine: 35, 'engine-bay': 35, headlights: 40, 'headlight-restoration': 40, headlights_uv: 80, 'headlight-restoration-uv': 80, softtop: 50, 'soft-top': 50 };
   return getBasePrice(serviceCode, size, zone) + addons.reduce((sum, addon) => sum + (prices[addon] || 0), 0);
 }
+// Allowed start hours (inclusive). Mon-Fri and Saturday rules per service; Sunday is closed.
+const hourRange = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+const WEEKDAY_START_HOURS: Record<ServiceCode, number[]> = {
+  EFD: hourRange(10, 16), DCD: hourRange(10, 12), PC1: [10], PC2: [10], CC: [10],
+  ENGINE: hourRange(10, 17), HL: hourRange(10, 17), HLUV: hourRange(10, 17),
+};
+const SATURDAY_START_HOURS: Partial<Record<ServiceCode, number[]>> = { EFD: [11], ENGINE: [11], HL: [11], HLUV: [11] };
+export function getAllowedStartTimes(code: ServiceCode, date: string): string[] {
+  const day = new Date(`${date}T00:00:00`).getDay();
+  const hours = day === 6 ? SATURDAY_START_HOURS[code] : day >= 1 && day <= 5 ? WEEKDAY_START_HOURS[code] : undefined;
+  return (hours || []).map((h) => `${String(h).padStart(2, '0')}:00`);
+}
 export function combineDateTime(date: string, time: string) {
   const [hour, minute] = time.split(':').map(Number);
   const dateObj = new Date(`${date}T00:00:00`);

@@ -1,5 +1,5 @@
 import { resolveZone } from '../../lib/zones.js';
-import { getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking';
+import { getAllowedStartTimes, getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking';
 import { getCalendarEvents } from '../lib/apple-caldav';
 
 const STANDALONE = new Set<ServiceCode>(['ENGINE', 'HL', 'HLUV']);
@@ -36,8 +36,8 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
     if (day.getDay() === 0) continue;
     const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
     const times: string[] = [];
-    for (let startMins = 510; startMins + duration <= 1080; startMins += 30) {
-      const start = formatMinutes(startMins), end = formatMinutes(startMins + duration);
+    for (const start of getAllowedStartTimes(service, date)) {
+      const [h, m] = start.split(':').map(Number), end = formatMinutes(h * 60 + m + duration);
       const startMs = new Date(`${date}T${start}:00`).getTime(), endMs = new Date(`${date}T${end}:00`).getTime();
       if (!events.some((event) => startMs < new Date(event.end).getTime() && endMs > new Date(event.start).getTime())) times.push(start);
     }
