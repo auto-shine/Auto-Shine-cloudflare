@@ -30,7 +30,7 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
   }
   {
     try { events = await getCalendarEvents({ caldavUrl: calendarUrl, username, password }); }
-    catch { return Response.json({ error: 'We could not load booking availability right now. Please try again or contact us on WhatsApp.' }, { status: 503 }); }
+    catch (error: any) { console.error('Calendar fetch failed', error?.message); return Response.json({ error: 'We could not load booking availability right now. Please try again or contact us on WhatsApp.', detail: String(error?.message || error) }, { status: 503 }); }
   }
   const days: Array<{ date: string; times: string[] }> = [];
   const today = new Date(); today.setHours(0, 0, 0, 0);
