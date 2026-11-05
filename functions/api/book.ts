@@ -1,5 +1,5 @@
 import { resolveZone } from '../../lib/zones.js';
-import { getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking';
+import { getAllowedStartTimes, getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking';
 import { sendEmail } from '../lib/email';
 
 const STANDALONE = new Set<ServiceCode>(['ENGINE', 'HL', 'HLUV']);
@@ -45,6 +45,7 @@ export const onRequest: PagesFunction = async ({ request, env, waitUntil }) => {
     const isFrom = isVariablePrice(serviceCode);
     const start = new Date(`${selectedDate}T${selectedTime}:00`);
     if (!Number.isFinite(start.getTime())) return Response.json({ error: 'Please choose a valid date and time.' }, { status: 400 });
+    if (!getAllowedStartTimes(serviceCode, selectedDate).includes(selectedTime)) return Response.json({ error: 'That start time is not available for this service. Please choose another slot.' }, { status: 400 });
     const end = new Date(start.getTime() + getDurationMinutes(serviceCode, size) * 60 * 1000);
     const bookingId = crypto.randomUUID();
     const db = env.DB;
