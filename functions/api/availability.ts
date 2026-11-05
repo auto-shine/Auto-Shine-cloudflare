@@ -25,7 +25,10 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
   const zone = zoneInfo.zone as Zone, duration = getDurationMinutes(service, size);
   const calendarUrl = env.APPLE_CALDAV_URL as string | undefined, username = env.APPLE_USERNAME as string | undefined, password = env.APPLE_APP_SPECIFIC_PASSWORD as string | undefined;
   let events: Array<{ start: string; end: string }> = [];
-  if (calendarUrl && username && password) {
+  if (!calendarUrl || !username || !password) {
+    return Response.json({ error: 'Online booking is temporarily unavailable. Please contact us on WhatsApp.' }, { status: 503 });
+  }
+  {
     try { events = await getCalendarEvents({ caldavUrl: calendarUrl, username, password }); }
     catch { return Response.json({ error: 'We could not load booking availability right now. Please try again or contact us on WhatsApp.' }, { status: 503 }); }
   }
