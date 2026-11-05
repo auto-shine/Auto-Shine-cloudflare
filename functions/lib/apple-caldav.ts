@@ -1,30 +1,68 @@
 import type { Zone } from './booking';
 
-export async function getCalendarEvents({
-  caldavUrl,
-  username,
-  password
-}: {
-  caldavUrl: string;
-  username: string;
-  password: string;
-}) {
-  const auth = btoa(`${username}:${password}`);
+type Credentials = { caldavUrl: string; username: string; password: string; calendarName?: string };
 
-  const res = await fetch(caldavUrl, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Basic ${auth}`,
-      'Accept': 'text/calendar, application/xml, text/xml'
-    }
+const decodeXml = (s: string) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+
+async function dav(url: string, method: string, auth: string, body: string, depth: string) {
+  const res = await fetch(url, {
+    method,
+    headers: { Authorization: `Basic ${auth}`, Depth: depth, 'Content-Type': 'application/xml; charset=utf-8' },
+    body
   });
+  if (!res.ok && res.status !== 207) throw new Error(`Calendar ${method} failed: ${res.status} ${res.statusText}`);
+  return res.text();
+}
 
-  if (!res.ok) {
-    throw new Error(`Calendar fetch failed: ${res.status} ${res.statusText}`);
+function firstHref(xml: string, prop: string) {
+  const block = xml.match(new RegExp(`<[^>]*${prop}[^>]*>([\\s\\S]*?)</[^>]*${prop}>`, 'i'));
+  const href = block?.[1].match(/<[^>]*href[^>]*>([^<]+)</i);
+  return href ? decodeXml(href[1].trim()) : null;
+}
+
+// iCloud needs discovery: server root -> user principal -> calendar home -> the named calendar.
+export async function resolveCalendarUrl({ caldavUrl, username, password, calendarName = 'Work' }: Credentials) {
+  const auth = btoa(`${username}:${password}`);
+  const root = new URL(caldavUrl);
+  const ns = 'xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"';
+
+  const principalXml = await dav(root.toString(), 'PROPFIND', auth,
+    `<d:propfind ${ns}><d:prop><d:current-user-principal/></d:prop></d:propfind>`, '0');
+  const principal = firstHref(principalXml, 'current-user-principal');
+  if (!principal) throw new Error('Calendar discovery failed: no user principal');
+
+  const principalUrl = new URL(principal, root).toString();
+  const homeXml = await dav(principalUrl, 'PROPFIND', auth,
+    `<d:propfind ${ns}><d:prop><c:calendar-home-set/></d:prop></d:propfind>`, '0');
+  const home = firstHref(homeXml, 'calendar-home-set');
+  if (!home) throw new Error('Calendar discovery failed: no calendar home');
+
+  const homeUrl = new URL(home, root).toString();
+  const listXml = await dav(homeUrl, 'PROPFIND', auth,
+    `<d:propfind ${ns}><d:prop><d:displayname/><d:resourcetype/></d:prop></d:propfind>`, '1');
+  const responses = listXml.split(/<[^>]*:?response[ >]/i).slice(1);
+  const wanted = calendarName.trim().toLowerCase();
+  for (const r of responses) {
+    const name = r.match(/<[^>]*displayname[^>]*>([^<]*)</i)?.[1];
+    const href = r.match(/<[^>]*href[^>]*>([^<]+)</i)?.[1];
+    if (href && name && decodeXml(name).trim().toLowerCase() === wanted && /calendar\s*\/>|:calendar\/>/i.test(r)) {
+      return new URL(decodeXml(href.trim()), homeUrl).toString();
+    }
   }
+  throw new Error(`Calendar "${calendarName}" not found`);
+}
 
-  const text = await res.text();
-  return parseCalendarText(text);
+export async function getCalendarEvents(creds: Credentials) {
+  const calendarUrl = await resolveCalendarUrl(creds);
+  const auth = btoa(`${creds.username}:${creds.password}`);
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  const from = new Date(); from.setDate(from.getDate() - 1);
+  const to = new Date(); to.setDate(to.getDate() + 90);
+
+  const xml = await dav(calendarUrl, 'REPORT', auth,
+    `<c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><c:calendar-data/></d:prop>` +
+    `<c:filter><c:comp-filter name="VCALENDAR"><c:comp-filter name="VEVENT"><c:time-range start="${fmt(from)}" end="${fmt(to)}"/></c:comp-filter></c:comp-filter></c:filter></c:calendar-query>`, '1');
+  return parseCalendarText(decodeXml(xml).replace(/<!\[CDATA\[|\]\]>/g, ''));
 }
 
 function parseCalendarText(text: string) {
@@ -33,9 +71,9 @@ function parseCalendarText(text: string) {
   const blocks = text.split('BEGIN:VEVENT');
   for (let i = 1; i < blocks.length; i++) {
     const block = blocks[i];
-    const summaryMatch = block.match(/SUMMARY:(.*)/);
-    const startMatch = block.match(/DTSTART(?:;VALUE=DATE)?:(.+)/);
-    const endMatch = block.match(/DTEND(?:;VALUE=DATE)?:(.+)/);
+    const summaryMatch = block.match(/SUMMARY[^:\r\n]*:(.*)/);
+    const startMatch = block.match(/DTSTART[^:\r\n]*:(.+)/);
+    const endMatch = block.match(/DTEND[^:\r\n]*:(.+)/);
 
     if (!startMatch || !endMatch) continue;
 
@@ -140,6 +178,7 @@ export async function createCalendarEvent({
   caldavUrl,
   username,
   password,
+  calendarName,
   title,
   description,
   startIso,
@@ -149,6 +188,7 @@ export async function createCalendarEvent({
   caldavUrl: string;
   username: string;
   password: string;
+  calendarName?: string;
   title: string;
   description: string;
   startIso: string;
@@ -158,7 +198,7 @@ export async function createCalendarEvent({
   const ics = createCalendarEventIcs({ title, description, startIso, endIso, location });
   const auth = btoa(`${username}:${password}`);
 
-  const eventUrl = new URL(caldavUrl);
+  const eventUrl = new URL(await resolveCalendarUrl({ caldavUrl, username, password, calendarName }));
   eventUrl.pathname = `${eventUrl.pathname.replace(/\/$/, '')}/${crypto.randomUUID()}.ics`;
 
   const res = await fetch(eventUrl.toString(), {

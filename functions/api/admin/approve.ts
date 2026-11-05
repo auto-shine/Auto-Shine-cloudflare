@@ -47,6 +47,7 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
       caldavUrl: env.APPLE_CALDAV_URL,
       username: env.APPLE_USERNAME,
       password: env.APPLE_APP_SPECIFIC_PASSWORD,
+      calendarName: env.APPLE_CALENDAR_NAME,
       title,
       description: desc,
       startIso: start.toISOString(),
