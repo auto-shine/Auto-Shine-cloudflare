@@ -40,16 +40,18 @@ export async function resolveCalendarUrl({ caldavUrl, username, password, calend
   const homeUrl = new URL(home, root).toString();
   const listXml = await dav(homeUrl, 'PROPFIND', auth,
     `<d:propfind ${ns}><d:prop><d:displayname/><d:resourcetype/></d:prop></d:propfind>`, '1');
-  const responses = listXml.split(/<[^>]*:?response[ >]/i).slice(1);
+  const responses = listXml.split(/<(?:\w+:)?response[\s>]/i).slice(1);
   const wanted = calendarName.trim().toLowerCase();
+  const seen: string[] = [];
   for (const r of responses) {
-    const name = r.match(/<[^>]*displayname[^>]*>([^<]*)</i)?.[1];
-    const href = r.match(/<[^>]*href[^>]*>([^<]+)</i)?.[1];
-    if (href && name && decodeXml(name).trim().toLowerCase() === wanted && /calendar\s*\/>|:calendar\/>/i.test(r)) {
-      return new URL(decodeXml(href.trim()), homeUrl).toString();
-    }
+    const name = r.match(/<(?:\w+:)?displayname[^>]*>([^<]*)</i)?.[1];
+    const href = r.match(/<(?:\w+:)?href[^>]*>([^<]+)</i)?.[1];
+    const isCalendar = /<(?:\w+:)?calendar(?:\s[^>]*)?\/?>/i.test(r.match(/<(?:\w+:)?resourcetype[^>]*>([\s\S]*?)<\/(?:\w+:)?resourcetype>/i)?.[1] || '');
+    if (!href || !name || !isCalendar) continue;
+    seen.push(decodeXml(name).trim());
+    if (decodeXml(name).trim().toLowerCase() === wanted) return new URL(decodeXml(href.trim()), homeUrl).toString();
   }
-  throw new Error(`Calendar "${calendarName}" not found`);
+  throw new Error(`Calendar "${calendarName}" not found. Calendars seen: ${seen.join(', ') || 'none'}`);
 }
 
 export async function getCalendarEvents(creds: Credentials) {
