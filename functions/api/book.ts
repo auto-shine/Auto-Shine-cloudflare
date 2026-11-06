@@ -1,5 +1,6 @@
 import { resolveZone } from '../../lib/zones.js';
 import { parseDateKey, parseTimeLabel, zonedToMs } from '../../lib/time.js';
+import { createNotifier } from '../../lib/notify.js';
 import { getAllowedStartTimes, getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking.ts';
 import { sendEmail } from '../lib/email.ts';
 import { createCalendarEvent } from '../lib/apple-caldav.ts';
@@ -95,6 +96,20 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
       console.error(`Calendar write failed for booking ${bookingId}`, error);
     }
 
+    let pushSent = false;
+    const topic = String(env.NTFY_TOPIC || '').trim();
+    if (topic && /^[A-Za-z0-9_-]{1,64}$/.test(topic)) {
+      const notify = createNotifier({ NTFY_TOPIC: topic });
+      if (notify) {
+        pushSent = await notify(calendarFailed
+          ? 'New booking request. Calendar update failed; check the booking record.'
+          : 'New booking request. Check your Work calendar for details.');
+        if (!pushSent) console.error(`Booking push notification failed for booking ${bookingId}`);
+      }
+    } else {
+      console.warn(`Booking push notification not configured or invalid for booking ${bookingId}`);
+    }
+
     const safe = (value: unknown) => escapeHtml(String(value));
     const emailHtml = `
       <h2>New booking request</h2>
@@ -127,7 +142,7 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
 
     return Response.json({
       success: true,
-      contactRequired: calendarFailed || emailFailed,
+      contactRequired: calendarFailed || (emailFailed && !pushSent),
       booking: {
         id: bookingId, service: SERVICE_DEFS[serviceCode].name, date: selectedDate,
         time: selectedTime, total: totalPrice, isFrom, days: 1,

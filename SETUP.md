@@ -22,13 +22,35 @@ environment (and separately for preview if needed):
   bookings, respectively. Their non-secret defaults are in `wrangler.toml`. Verify
   the sender domain in Resend and make sure the key has sending access.
 
+### Free ntfy phone alerts
+
+The Cloudflare booking endpoint can also send a generic push alert through ntfy.
+This is independent of email. To enable it:
+
+1. In the ntfy app, subscribe to a new, long random topic on `https://ntfy.sh`.
+   Use only letters, numbers, `_` and `-`, with no spaces or URL. Enable app and
+   topic notifications in your phone settings.
+2. In Cloudflare Pages, add `NTFY_TOPIC` as a production secret containing exactly
+   the same topic name, and redeploy. Configure preview separately if testing there.
+   Do not commit the topic or share it publicly.
+3. Send a test message to the topic using the ntfy app or ntfy website. Confirm
+   that your phone receives it, then make a test booking after deploying the site.
+   Check for the push alert and the event in the Work calendar; delete the test event.
+
+Anyone who knows an ntfy.sh topic can read or publish messages to it. Booking alerts
+therefore contain no customer details: open the calendar for those. If the calendar
+write fails, the alert says so and the customer is asked to contact Jake. Delivery
+by ntfy to a phone is not guaranteed by a successful publish; check phone notification
+permissions, battery restrictions, subscription server and the topic if alerts do not
+arrive. Cloudflare function logs show missing/invalid topic and publish failures.
+
 Never commit passwords or API keys. After updating environment settings, deploy the
 site and make a real test request. Check that the owner email arrives, the event
 appears at the correct local time in the Work calendar, and Jake can contact the
 customer. Remove the test event afterwards.
 
-If either notification fails, the request remains saved and the customer is asked
-to contact Jake on WhatsApp instead of submitting it again. A calendar failure is
+If the calendar fails or both email and push fail, the request remains saved and the
+customer is asked to contact Jake on WhatsApp instead of submitting it again. A calendar failure is
 also mentioned in the owner email if email succeeds. Check Cloudflare Pages function
 logs for `Calendar write failed` or `Booking email failed` and the booking ID.
 If a calendar write failed, check the calendar before adding the event manually:
