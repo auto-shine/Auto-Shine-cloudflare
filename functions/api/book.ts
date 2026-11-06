@@ -4,6 +4,7 @@ import { createNotifier } from '../../lib/notify.js';
 import { getAllowedStartTimes, getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking.ts';
 import { sendEmail } from '../lib/email.ts';
 import { createCalendarEvent } from '../lib/apple-caldav.ts';
+import { sendNtfyMe } from '../lib/ntfy-me.ts';
 
 const STANDALONE = new Set<ServiceCode>(['ENGINE', 'HL', 'HLUV']);
 const ADDON_PRICES: Record<string, number> = {
@@ -97,16 +98,22 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
     }
 
     let pushSent = false;
+    const pushMessage = calendarFailed
+      ? 'New booking request. Calendar update failed; check the booking record.'
+      : 'New booking request. Check your Work calendar for details.';
+    const ntfyMeToken = String(env.NTFYME_TOKEN || '').trim();
+    if (ntfyMeToken) {
+      pushSent = await sendNtfyMe(ntfyMeToken, pushMessage);
+      if (!pushSent) console.error(`Ntfy me notification failed for booking ${bookingId}`);
+    }
     const topic = String(env.NTFY_TOPIC || '').trim();
-    if (topic && /^[A-Za-z0-9_-]{1,64}$/.test(topic)) {
+    if (!pushSent && topic && /^[A-Za-z0-9_-]{1,64}$/.test(topic)) {
       const notify = createNotifier({ NTFY_TOPIC: topic });
       if (notify) {
-        pushSent = await notify(calendarFailed
-          ? 'New booking request. Calendar update failed; check the booking record.'
-          : 'New booking request. Check your Work calendar for details.');
+        pushSent = await notify(pushMessage);
         if (!pushSent) console.error(`Booking push notification failed for booking ${bookingId}`);
       }
-    } else {
+    } else if (!pushSent && !ntfyMeToken) {
       console.warn(`Booking push notification not configured or invalid for booking ${bookingId}`);
     }
 

@@ -22,7 +22,22 @@ environment (and separately for preview if needed):
   bookings, respectively. Their non-secret defaults are in `wrangler.toml`. Verify
   the sender domain in Resend and make sure the key has sending access.
 
-### Free ntfy phone alerts
+### Ntfy me phone alerts
+
+The Ntfy me app from ntfyme.net is a different service from ntfy.sh. Set its
+token as a Cloudflare Pages production secret named `NTFYME_TOKEN`, then deploy.
+Never commit or share the token. The booking function sends a generic message,
+without customer details, to Ntfy me's `https://ntfyme.net/msg` API. Enable
+notifications in the app and on the phone, then make a test booking and check both
+the phone alert and Work calendar. If the app uses message filters, ensure they
+allow the booking messages. A successful API response is not proof of phone delivery.
+Check the app's current free-tier limits before relying on the service.
+
+If publishing to Ntfy me fails, the function attempts the ntfy.sh topic below when
+configured. A successful Ntfy me publish suppresses the ntfy.sh alert to avoid
+duplicate notifications. The function logs publish failures without logging tokens.
+
+### Free ntfy.sh phone alerts
 
 The Cloudflare booking endpoint can also send a generic push alert through ntfy.
 This is independent of email. To enable it:
