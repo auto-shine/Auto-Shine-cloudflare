@@ -11,7 +11,7 @@ const payload = {
   address: '12 Castle Road', vehicle: 'Golf', notes: 'Gate code',
 };
 
-async function submit({ calendarFailure = false, missingEmailKey = false, emailFailure = false, date = payload.date, topic, pushFailure = false } = {}) {
+async function submit({ calendarFailure = false, missingEmailKey = false, emailFailure = false, date = payload.date, topic, pushFailure = false, ntfyMeToken, ntfyMeFailure = false } = {}) {
   const calls = [];
   const inserts = [];
   const env = {
@@ -19,6 +19,7 @@ async function submit({ calendarFailure = false, missingEmailKey = false, emailF
     APPLE_APP_SPECIFIC_PASSWORD: 'test', APPLE_CALENDAR_NAME: 'Work',
     RESEND_API_KEY: missingEmailKey ? '' : 'test-key',
     NTFY_TOPIC: topic,
+    NTFYME_TOKEN: ntfyMeToken,
     DB: { prepare: (sql) => ({ bind: (...values) => ({ run: async () => { inserts.push({ sql, values }); } }) }) },
   };
   const previousFetch = globalThis.fetch;
@@ -32,6 +33,7 @@ async function submit({ calendarFailure = false, missingEmailKey = false, emailF
       return Response.json({ result: { latitude: BUSINESS.origin.lat, longitude: BUSINESS.origin.lng } });
     }
     if (String(url) === 'https://api.resend.com/emails') return emailFailure ? new Response('unavailable', { status: 503 }) : Response.json({ id: 'email-id' });
+    if (String(url) === 'https://ntfyme.net/msg') return ntfyMeFailure ? new Response('unavailable', { status: 503 }) : new Response('ok');
     if (String(url).startsWith('https://ntfy.sh/')) return pushFailure ? new Response('unavailable', { status: 503 }) : new Response('ok');
     if (calendarFailure) return new Response('unavailable', { status: 503 });
     if (init.method === 'PUT') return new Response(null, { status: 201 });
@@ -126,6 +128,42 @@ test('an invalid topic is not sent to ntfy', async () => {
   const { body, calls } = await submit({ topic: 'https://ntfy.sh/not-a-topic', emailFailure: true });
   assert.equal(body.contactRequired, true);
   assert.ok(!calls.some((call) => call.url.startsWith('https://ntfy.sh/')));
+});
+
+test('Ntfy me receives a generic alert using the configured token, without duplicating ntfy.sh', async () => {
+  const { body, calls } = await submit({ ntfyMeToken: 'test-token', topic: 'fallback_topic', emailFailure: true });
+  assert.equal(body.contactRequired, false);
+  const pushes = calls.filter((call) => call.url === 'https://ntfyme.net/msg');
+  assert.equal(pushes.length, 1);
+  assert.equal(pushes[0].method, 'POST');
+  assert.equal(pushes[0].headers.Authorization, 'Bearer test-token');
+  assert.equal(pushes[0].headers['Content-Type'], 'text/plain; charset=utf-8');
+  assert.equal(pushes[0].body, 'New booking request. Check your Work calendar for details.');
+  assert.ok(calls.findIndex((call) => call.method === 'PUT') < calls.indexOf(pushes[0]));
+  assert.ok(!calls.some((call) => call.url.startsWith('https://ntfy.sh/')));
+  for (const secret of ['Jamie', '07700', 'jamie@', 'Castle', 'Gate code', 'Golf']) assert.ok(!pushes[0].body.includes(secret));
+});
+
+test('Ntfy me failure falls back to ntfy.sh without losing the booking', async () => {
+  const { body, calls, inserts } = await submit({ ntfyMeToken: 'test-token', ntfyMeFailure: true, topic: 'fallback_topic', emailFailure: true });
+  assert.equal(body.success, true);
+  assert.equal(body.contactRequired, false);
+  assert.equal(inserts.length, 1);
+  assert.ok(calls.some((call) => call.url === 'https://ntfyme.net/msg'));
+  assert.ok(calls.some((call) => call.url === 'https://ntfy.sh/fallback_topic'));
+});
+
+test('Ntfy me and email failures request contact if no fallback is configured', async () => {
+  const { body, inserts } = await submit({ ntfyMeToken: 'test-token', ntfyMeFailure: true, emailFailure: true });
+  assert.equal(body.success, true);
+  assert.equal(body.contactRequired, true);
+  assert.equal(inserts.length, 1);
+});
+
+test('Ntfy me reports calendar failure without customer details', async () => {
+  const { body, calls } = await submit({ ntfyMeToken: 'test-token', calendarFailure: true, emailFailure: true });
+  assert.equal(body.contactRequired, true);
+  assert.match(calls.find((call) => call.url === 'https://ntfyme.net/msg').body, /Calendar update failed/);
 });
 
 test('winter bookings use GMT rather than summer time', async () => {
