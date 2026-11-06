@@ -1,5 +1,5 @@
-import { createCalendarEvent } from '../../lib/apple-caldav';
-import { sendEmail } from '../../lib/email';
+import { createCalendarEvent } from '../../lib/apple-caldav.ts';
+import { sendEmail } from '../../lib/email.ts';
 
 export const onRequest: PagesFunction = async ({ request, env }) => {
   if (request.method !== 'POST') {
@@ -26,7 +26,9 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
     return Response.json({ error: 'Booking not found' }, { status: 404 });
   }
 
-  const now = new Date();
+  if (row.status !== 'pending') {
+    return Response.json({ error: 'This booking does not require admin approval.' }, { status: 409 });
+  }
   const start = new Date(String(row.booking_start));
   const end = new Date(String(row.booking_end));
 
@@ -79,7 +81,7 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
       <p>Thanks,</p>
       <p>AutoShine</p>
     `
-  });
+  }, env.RESEND_API_KEY);
 
   return Response.json({
     success: true,

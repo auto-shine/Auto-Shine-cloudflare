@@ -1,11 +1,11 @@
 import { resolveZone } from '../../lib/zones.js';
-import { getAllowedStartTimes, getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking';
-import { getCalendarEvents } from '../lib/apple-caldav';
+import { addDays, dateKey, partsInZone, zonedToMs } from '../../lib/time.js';
+import { getAllowedStartTimes, getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking.ts';
+import { getCalendarEvents } from '../lib/apple-caldav.ts';
 
 const STANDALONE = new Set<ServiceCode>(['ENGINE', 'HL', 'HLUV']);
 const ADDON_PRICES: Record<string, number> = { engine: 35, 'engine-bay': 35, headlights: 40, 'headlight-restoration': 40, headlights_uv: 80, 'headlight-restoration-uv': 80, softtop: 50, 'soft-top': 50 };
 function parseAddons(raw?: string | string[]) { if (!raw) return []; if (Array.isArray(raw)) return raw.filter(Boolean); return String(raw).split(',').map((part) => part.trim()).filter(Boolean); }
-function formatMinutes(total: number) { return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`; }
 
 export const onRequest: PagesFunction = async ({ request, env }) => {
   const url = new URL(request.url), params = url.searchParams;
@@ -33,15 +33,14 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
     catch (error: any) { console.error('Calendar fetch failed', error?.message); return Response.json({ error: 'We could not load booking availability right now. Please try again or contact us on WhatsApp.', detail: String(error?.message || error) }, { status: 503 }); }
   }
   const days: Array<{ date: string; times: string[] }> = [];
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const today = partsInZone(Date.now(), 'Europe/London');
   for (let offset = 1; offset <= 30; offset++) {
-    const day = new Date(today); day.setDate(today.getDate() + offset);
-    if (day.getDay() === 0) continue;
-    const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    const day = addDays(today, offset);
+    const date = dateKey(day);
     const times: string[] = [];
     for (const start of getAllowedStartTimes(service, date)) {
-      const [h, m] = start.split(':').map(Number), end = formatMinutes(h * 60 + m + duration);
-      const startMs = new Date(`${date}T${start}:00`).getTime(), endMs = new Date(`${date}T${end}:00`).getTime();
+      const [h, m] = start.split(':').map(Number);
+      const startMs = zonedToMs({ ...day, h, mi: m }, 'Europe/London'), endMs = startMs + duration * 60 * 1000;
       if (!events.some((event) => startMs < new Date(event.end).getTime() && endMs > new Date(event.start).getTime())) times.push(start);
     }
     if (times.length) days.push({ date, times });

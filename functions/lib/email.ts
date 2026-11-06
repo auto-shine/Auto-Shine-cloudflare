@@ -3,20 +3,21 @@ export async function sendEmail(
     to,
     from,
     subject,
-    html
+    html,
+    replyTo
   }: {
     to: string;
     from: string;
     subject: string;
     html: string;
+    replyTo?: string;
   },
   apiKeyOverride?: string
 ) {
   const apiKey = apiKeyOverride || (globalThis as any).process?.env?.RESEND_API_KEY || '';
 
   if (!apiKey) {
-    console.warn('RESEND_API_KEY missing; skipping email.');
-    return { ok: true, skipped: true };
+    throw new Error('RESEND_API_KEY is not configured');
   }
 
   const res = await fetch('https://api.resend.com/emails', {
@@ -29,7 +30,8 @@ export async function sendEmail(
       from,
       to: [to],
       subject,
-      html
+      html,
+      ...(replyTo ? { reply_to: replyTo } : {})
     })
   });
 
