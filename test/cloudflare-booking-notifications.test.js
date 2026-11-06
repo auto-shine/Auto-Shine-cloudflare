@@ -11,24 +11,28 @@ const payload = {
   address: '12 Castle Road', vehicle: 'Golf', notes: 'Gate code',
 };
 
-async function submit({ calendarFailure = false, missingEmailKey = false, emailFailure = false, date = payload.date } = {}) {
+async function submit({ calendarFailure = false, missingEmailKey = false, emailFailure = false, date = payload.date, topic, pushFailure = false } = {}) {
   const calls = [];
   const inserts = [];
   const env = {
     APPLE_CALDAV_URL: 'https://caldav.icloud.com/', APPLE_USERNAME: 'test',
     APPLE_APP_SPECIFIC_PASSWORD: 'test', APPLE_CALENDAR_NAME: 'Work',
     RESEND_API_KEY: missingEmailKey ? '' : 'test-key',
+    NTFY_TOPIC: topic,
     DB: { prepare: (sql) => ({ bind: (...values) => ({ run: async () => { inserts.push({ sql, values }); } }) }) },
   };
   const previousFetch = globalThis.fetch;
   const previousError = console.error;
+  const previousWarn = console.warn;
   console.error = () => {};
+  console.warn = () => {};
   globalThis.fetch = async (url, init = {}) => {
     calls.push({ url: String(url), ...init });
     if (String(url).startsWith('https://api.postcodes.io/')) {
       return Response.json({ result: { latitude: BUSINESS.origin.lat, longitude: BUSINESS.origin.lng } });
     }
     if (String(url) === 'https://api.resend.com/emails') return emailFailure ? new Response('unavailable', { status: 503 }) : Response.json({ id: 'email-id' });
+    if (String(url).startsWith('https://ntfy.sh/')) return pushFailure ? new Response('unavailable', { status: 503 }) : new Response('ok');
     if (calendarFailure) return new Response('unavailable', { status: 503 });
     if (init.method === 'PUT') return new Response(null, { status: 201 });
     if (String(url).endsWith('/principal/')) return new Response('<d:calendar-home-set><d:href>/home/</d:href></d:calendar-home-set>', { status: 207 });
@@ -42,6 +46,7 @@ async function submit({ calendarFailure = false, missingEmailKey = false, emailF
   } finally {
     globalThis.fetch = previousFetch;
     console.error = previousError;
+    console.warn = previousWarn;
   }
 }
 
@@ -87,6 +92,40 @@ test('email provider failure leaves the booking and calendar event intact', asyn
   assert.equal(body.contactRequired, true);
   assert.equal(inserts.length, 1);
   assert.equal(calls.filter((call) => call.method === 'PUT').length, 1);
+});
+
+test('a configured ntfy topic receives one private alert even when email fails', async () => {
+  const { body, calls, inserts } = await submit({ topic: 'autoshine_test_123', emailFailure: true });
+  assert.equal(body.success, true);
+  assert.equal(body.contactRequired, false);
+  assert.equal(inserts.length, 1);
+  const pushes = calls.filter((call) => call.url.startsWith('https://ntfy.sh/'));
+  assert.equal(pushes.length, 1);
+  assert.equal(pushes[0].url, 'https://ntfy.sh/autoshine_test_123');
+  assert.equal(pushes[0].method, 'POST');
+  assert.equal(pushes[0].body, 'New booking request. Check your Work calendar for details.');
+  assert.ok(calls.findIndex((call) => call.method === 'PUT') < calls.indexOf(pushes[0]));
+  for (const secret of ['Jamie', '07700', 'jamie@', 'Castle', 'Gate code', 'Golf']) assert.ok(!pushes[0].body.includes(secret));
+});
+
+test('ntfy failure and email failure leave the booking saved and ask the customer to contact Jake', async () => {
+  const { body, calls, inserts } = await submit({ topic: 'autoshine_test_123', pushFailure: true, emailFailure: true });
+  assert.equal(body.success, true);
+  assert.equal(body.contactRequired, true);
+  assert.equal(inserts.length, 1);
+  assert.equal(calls.filter((call) => call.method === 'PUT').length, 1);
+});
+
+test('a failed calendar update is mentioned in the push notification', async () => {
+  const { body, calls } = await submit({ topic: 'autoshine_test_123', calendarFailure: true, emailFailure: true });
+  assert.equal(body.contactRequired, true);
+  assert.match(calls.find((call) => call.url.startsWith('https://ntfy.sh/')).body, /Calendar update failed/);
+});
+
+test('an invalid topic is not sent to ntfy', async () => {
+  const { body, calls } = await submit({ topic: 'https://ntfy.sh/not-a-topic', emailFailure: true });
+  assert.equal(body.contactRequired, true);
+  assert.ok(!calls.some((call) => call.url.startsWith('https://ntfy.sh/')));
 });
 
 test('winter bookings use GMT rather than summer time', async () => {
