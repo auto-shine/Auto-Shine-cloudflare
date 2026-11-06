@@ -1,4 +1,5 @@
 import type { Zone } from './booking';
+import { escapeText, foldLine } from '../../lib/ics.js';
 
 type Credentials = { caldavUrl: string; username: string; password: string; calendarName?: string };
 
@@ -168,12 +169,12 @@ export function createCalendarEventIcs({
     `DTSTAMP:${fmt(new Date())}`,
     `DTSTART:${fmt(start)}`,
     `DTEND:${fmt(end)}`,
-    `SUMMARY:${title}`,
-    `DESCRIPTION:${description}`,
-    `LOCATION:${location}`,
+    `SUMMARY:${escapeText(title)}`,
+    `DESCRIPTION:${escapeText(description)}`,
+    `LOCATION:${escapeText(location)}`,
     'END:VEVENT',
     'END:VCALENDAR'
-  ].join('\r\n');
+  ].map(foldLine).join('\r\n') + '\r\n';
 }
 
 export async function createCalendarEvent({

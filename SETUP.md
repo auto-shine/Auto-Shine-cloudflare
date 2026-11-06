@@ -1,4 +1,40 @@
-# AutoShine: website + online booking (ready to deploy)
+# AutoShine: Cloudflare booking setup
+
+The site now runs on Cloudflare Pages, not Netlify. The Netlify instructions below
+are historical and must not be used for the current site.
+
+## Booking notifications
+
+Each booking request is stored in D1, added to the Apple `Work` calendar and emailed
+to the owner. It remains a request: Jake contacts the customer to confirm it. No
+admin approval or automatic customer confirmation email is needed.
+
+In the Cloudflare Pages project, configure the following for the production
+environment (and separately for preview if needed):
+
+- `DB`: the D1 database binding in `wrangler.toml`, with the bookings table from
+  `schema.sql`.
+- `APPLE_CALDAV_URL`, `APPLE_USERNAME` and `APPLE_CALENDAR_NAME`: the Apple calendar
+  server, Apple ID and calendar name. The non-secret defaults are in `wrangler.toml`.
+- `APPLE_APP_SPECIFIC_PASSWORD`: the Apple app-specific password, stored as a secret.
+- `RESEND_API_KEY`: a Resend API key, stored as a secret.
+- `EMAIL_FROM` and `EMAIL_TO`: the verified Resend sender and the inbox receiving
+  bookings, respectively. Their non-secret defaults are in `wrangler.toml`. Verify
+  the sender domain in Resend and make sure the key has sending access.
+
+Never commit passwords or API keys. After updating environment settings, deploy the
+site and make a real test request. Check that the owner email arrives, the event
+appears at the correct local time in the Work calendar, and Jake can contact the
+customer. Remove the test event afterwards.
+
+If either notification fails, the request remains saved and the customer is asked
+to contact Jake on WhatsApp instead of submitting it again. A calendar failure is
+also mentioned in the owner email if email succeeds. Check Cloudflare Pages function
+logs for `Calendar write failed` or `Booking email failed` and the booking ID.
+If a calendar write failed, check the calendar before adding the event manually:
+a network error can occur after Apple has accepted it.
+
+## Historical Netlify instructions (not for the current site)
 
 ## What's in this folder
 - `public/`            → YOUR WEBSITE (all your pages, css, js, images). Unchanged except two things:
