@@ -43,8 +43,11 @@ test('all local location pages use the same postcode-based prices', () => {
   const pages = readdirSync(directory).filter((name) => name.endsWith('.html')).map((name) => [name, readFileSync(new URL(name, directory), 'utf8')]);
   const locations = pages.filter(([, html]) => html.includes('data-location-prices'));
   assert.equal(locations.length, 43);
+  const cards = pages.find(([name]) => name === 'redditch.html')[1].match(/<section class="grid4">[\s\S]*?<\/section>/)[0];
   for (const [name, html] of locations) {
-    for (const code of ['EFD', 'DCD', 'PC1', 'CC']) assert.ok(html.includes(`data-service-price="${code}"`), `${name} missing ${code}`);
+    const section = html.match(/<section class="grid4">[\s\S]*?<\/section>/)?.[0];
+    assert.equal(section, cards, `${name} must show the full service details and booking links`);
+    for (const code of ['EFD', 'DCD', 'PC1', 'CC']) assert.equal((html.match(new RegExp(`data-service-price="${code}"`, 'g')) || []).length, 1, `${name}: ${code}`);
     assert.ok(html.includes('/js/location-prices.js'), name);
     assert.doesNotMatch(html, /15 miles|£1 per mile|fixed price/i, name);
   }
