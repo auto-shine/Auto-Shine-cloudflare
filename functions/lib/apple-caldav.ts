@@ -1,5 +1,6 @@
 import type { Zone } from './booking';
 import { escapeText, foldLine } from '../../lib/ics.js';
+import { parseBusy } from '../../lib/busy.js';
 
 type Credentials = { caldavUrl: string; username: string; password: string; calendarName?: string };
 
@@ -55,64 +56,22 @@ export async function resolveCalendarUrl({ caldavUrl, username, password, calend
   throw new Error(`Calendar "${calendarName}" not found. Calendars seen: ${seen.join(', ') || 'none'}`);
 }
 
-export async function getCalendarEvents(creds: Credentials) {
+export async function getCalendarEvents(creds: Credentials, range?: { start: number; end: number }) {
   const calendarUrl = await resolveCalendarUrl(creds);
   const auth = btoa(`${creds.username}:${creds.password}`);
   const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
-  const from = new Date(); from.setDate(from.getDate() - 1);
-  const to = new Date(); to.setDate(to.getDate() + 90);
+  const from = new Date(range?.start ?? Date.now() - 2 * 86400000);
+  const to = new Date(range?.end ?? Date.now() + 90 * 86400000);
 
   const xml = await dav(calendarUrl, 'REPORT', auth,
     `<c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><c:calendar-data/></d:prop>` +
     `<c:filter><c:comp-filter name="VCALENDAR"><c:comp-filter name="VEVENT"><c:time-range start="${fmt(from)}" end="${fmt(to)}"/></c:comp-filter></c:comp-filter></c:filter></c:calendar-query>`, '1');
-  return parseCalendarText(decodeXml(xml).replace(/<!\[CDATA\[|\]\]>/g, ''));
-}
-
-function parseCalendarText(text: string) {
-  const events: Array<{ start: string; end: string; summary: string }> = [];
-
-  const blocks = text.split('BEGIN:VEVENT');
-  for (let i = 1; i < blocks.length; i++) {
-    const block = blocks[i];
-    const summaryMatch = block.match(/SUMMARY[^:\r\n]*:(.*)/);
-    const startMatch = block.match(/DTSTART[^:\r\n]*:(.+)/);
-    const endMatch = block.match(/DTEND[^:\r\n]*:(.+)/);
-
-    if (!startMatch || !endMatch) continue;
-
-    const summary = summaryMatch ? summaryMatch[1].replace(/\\n/g, ' ').trim() : 'Booked';
-    const start = normalizeICSDate(startMatch[1].trim());
-    const end = normalizeICSDate(endMatch[1].trim());
-
-    events.push({ start, end, summary });
-  }
-
-  return events;
-}
-
-function normalizeICSDate(raw: string) {
-  const cleaned = raw.replace(/Z/g, '').replace(/\\n/g, '').trim();
-
-  if (cleaned.length === 8) {
-    // date only
-    const year = Number(cleaned.slice(0, 4));
-    const month = Number(cleaned.slice(4, 6));
-    const day = Number(cleaned.slice(6, 8));
-    return new Date(Date.UTC(year, month - 1, day, 12, 0, 0)).toISOString();
-  }
-
-  if (cleaned.length >= 15) {
-    const year = Number(cleaned.slice(0, 4));
-    const month = Number(cleaned.slice(4, 6));
-    const day = Number(cleaned.slice(6, 8));
-    const hour = Number(cleaned.slice(9, 11));
-    const minute = Number(cleaned.slice(11, 13));
-    const second = Number(cleaned.slice(13, 15) || '00');
-
-    return new Date(Date.UTC(year, month - 1, day, hour, minute, second)).toISOString();
-  }
-
-  return new Date().toISOString();
+  const blocks = [...xml.matchAll(/<(?:[\w-]+:)?calendar-data\b[^>]*>([\s\S]*?)<\/(?:[\w-]+:)?calendar-data\s*>/gi)];
+  const texts = blocks.length ? blocks.map((block) => decodeXml(block[1].replace(/<!\[CDATA\[|\]\]>/g, ''))) : [decodeXml(xml)];
+  return parseBusy(texts, {
+    rangeStartMs: from.getTime(), rangeEndMs: to.getTime(), tz: 'Europe/London',
+    onWarning: (warning: string) => console.warn('Calendar recurrence warning:', warning),
+  }).map((event: { start: number; end: number }) => ({ start: new Date(event.start).toISOString(), end: new Date(event.end).toISOString() }));
 }
 
 export async function isSlotBooked({

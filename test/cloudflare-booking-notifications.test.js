@@ -11,7 +11,7 @@ const payload = {
   address: '12 Castle Road', vehicle: 'Golf', notes: 'Gate code',
 };
 
-async function submit({ calendarFailure = false, missingEmailKey = false, emailFailure = false, date = payload.date, topic, pushFailure = false, ntfyMeToken, ntfyMeFailure = false } = {}) {
+async function submit({ calendarFailure = false, calendarReadFailure = false, calendarEvents = '', missingEmailKey = false, emailFailure = false, date = payload.date, topic, pushFailure = false, ntfyMeToken, ntfyMeFailure = false } = {}) {
   const calls = [];
   const inserts = [];
   const env = {
@@ -35,8 +35,9 @@ async function submit({ calendarFailure = false, missingEmailKey = false, emailF
     if (String(url) === 'https://api.resend.com/emails') return emailFailure ? new Response('unavailable', { status: 503 }) : Response.json({ id: 'email-id' });
     if (String(url) === 'https://ntfyme.net/msg') return ntfyMeFailure ? new Response('unavailable', { status: 503 }) : new Response('ok');
     if (String(url).startsWith('https://ntfy.sh/')) return pushFailure ? new Response('unavailable', { status: 503 }) : new Response('ok');
-    if (calendarFailure) return new Response('unavailable', { status: 503 });
+    if (calendarFailure && init.method === 'PUT') return new Response('unavailable', { status: 503 });
     if (init.method === 'PUT') return new Response(null, { status: 201 });
+    if (init.method === 'REPORT') return calendarReadFailure ? new Response('unavailable', { status: 503 }) : new Response(calendarEvents || '<d:multistatus/>', { status: 207 });
     if (String(url).endsWith('/principal/')) return new Response('<d:calendar-home-set><d:href>/home/</d:href></d:calendar-home-set>', { status: 207 });
     if (String(url).endsWith('/home/')) return new Response('<d:response><d:href>/home/work/</d:href><d:displayname>Work</d:displayname><d:resourcetype><c:calendar/></d:resourcetype></d:response>', { status: 207 });
     return new Response('<d:current-user-principal><d:href>/principal/</d:href></d:current-user-principal>', { status: 207 });
@@ -171,6 +172,21 @@ test('winter bookings use GMT rather than summer time', async () => {
   assert.match(calls.find((call) => call.method === 'PUT').body, /DTSTART:20270111T100000Z/);
 });
 
+test('calendar recheck rejects a booking less than one hour after an existing event', async () => {
+  const calendarEvents = 'BEGIN:VEVENT\r\nDTSTART:20270712T073000Z\r\nDTEND:20270712T083000Z\r\nEND:VEVENT';
+  const { response, body, inserts, calls } = await submit({ calendarEvents });
+  assert.equal(response.status, 409);
+  assert.equal(body.code, 'slot_taken');
+  assert.equal(inserts.length, 0);
+  assert.ok(!calls.some((call) => call.method === 'PUT'));
+});
+
+test('calendar recheck refuses a booking if availability cannot be checked', async () => {
+  const { response, inserts } = await submit({ calendarReadFailure: true });
+  assert.equal(response.status, 503);
+  assert.equal(inserts.length, 0);
+});
+
 test('new requests cannot be approved a second time via the legacy admin endpoint', async () => {
   const env = { DB: { prepare: () => ({ bind: () => ({ first: async () => ({ status: 'requested' }) }) }) } };
   const request = new Request('https://example.com/api/admin/approve', { method: 'POST', body: JSON.stringify({ bookingId: 'id' }) });
@@ -196,7 +212,8 @@ test('summer availability excludes the local time of a new UTC calendar event', 
     const { slots } = await response.json();
     const day = slots.find((slot) => slot.date === '2027-07-12');
     assert.ok(!day.times.includes('10:00'));
-    assert.ok(day.times.includes('14:00'));
+    assert.ok(!day.times.includes('14:00'));
+    assert.ok(day.times.includes('15:00'));
   } finally {
     Date.now = previousNow;
     globalThis.fetch = previousFetch;

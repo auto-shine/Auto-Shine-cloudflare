@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Book Online | Mobile Car Detailing | AutoShine</title>
-  <meta name="description" content="Get an instant fixed price and book your mobile car detail online in Kenilworth, Warwick, Leamington Spa and across Warwickshire.">
+  <meta name="description" content="Get a starting estimate and request your mobile car detail online in Kenilworth, Warwick, Leamington Spa and across Warwickshire.">
   <link rel="canonical" href="https://www.auto-shine.co.uk/book">
   <meta property="og:site_name" content="AutoShine">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Book Online | AutoShine">
-  <meta property="og:description" content="Get an instant fixed price and book your mobile car detail online in Kenilworth, Warwick, Leamington Spa and across Warwickshire.">
+  <meta property="og:description" content="Get a starting estimate and request your mobile car detail online in Kenilworth, Warwick, Leamington Spa and across Warwickshire.">
   <meta property="og:url" content="https://www.auto-shine.co.uk/book">
   <meta property="og:image" content="https://www.auto-shine.co.uk/img/85e2493b-autoshine-logo-transparent.png">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Book Online | AutoShine">
-  <meta name="twitter:description" content="Get an instant fixed price and book your mobile car detail online in Kenilworth, Warwick, Leamington Spa and across Warwickshire.">
+  <meta name="twitter:description" content="Get a starting estimate and request your mobile car detail online in Kenilworth, Warwick, Leamington Spa and across Warwickshire.">
   <link rel="icon" href="/favicon.ico" media="(prefers-color-scheme: light)">
   <link rel="icon" href="/favicon-dark.ico" media="(prefers-color-scheme: dark)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -131,7 +131,7 @@
 <main id="page">
 <div class="bk" id="app">
   <h1>Get a price and book online</h1>
-  <p class="lead">Enter your postcode and car size for an instant fixed price, then pick a day that suits you.</p>
+  <p class="lead">Enter your postcode and car size for a starting estimate, then request a day that suits you. Jake will confirm the final price.</p>
   <section id="s-postcode"><h2><span class="n">1</span> Where is the car?</h2><label class="field" for="postcode">Postcode</label><div class="row"><input id="postcode" type="text" inputmode="text" autocomplete="postal-code" autocapitalize="characters" placeholder="e.g. CV8 1AB" maxlength="9"><button class="btn" id="check" type="button">Check</button></div><div id="postcode-msg" role="status" aria-live="polite"></div></section>
   <section id="s-size" hidden><h2><span class="n">2</span> Car size</h2><div class="choices three sizes" id="sizes" role="radiogroup" aria-label="Car size"></div><p class="muted" id="size-help"></p></section>
   <section id="s-service" hidden><h2><span class="n">3</span> What would you like?</h2><div class="choices" id="services" role="radiogroup" aria-label="Service"></div><p class="muted" style="margin:14px 0 6px"><strong>Just need one thing?</strong></p><div class="choices" id="services-solo" role="radiogroup" aria-label="Single service"></div><label class="check" id="soiled-wrap" hidden><input type="checkbox" id="soiled"><span>The car has heavy dirt, mould or lots of pet hair <span class="muted">(final price confirmed from photos)</span></span></label></section>
@@ -344,7 +344,7 @@
     const b = res.booking || {};
     try { if (typeof gtag === 'function' && b.total != null && !res.ignored) { gtag('event', 'conversion', { send_to: 'AW-16467941872/Gn9vCNHG36wdEPCzw6w9', value: Number(b.total), currency: 'GBP', transaction_id: b.id || undefined }); gtag('event', 'booking_complete', { value: Number(b.total), currency: 'GBP', service: b.service, transaction_id: b.id || undefined }); } } catch (e) {}
     const sec = $('s-done'); clear(sec); const f = b.date ? fmtDate(b.date) : null;
-    sec.append(h('h2', {}, '✓ Booking request received'), h('p', {}, b.service ? `${b.service} on ${f.long} at ${b.time}${b.days > 1 ? ` (over ${b.days} days)` : ''}.` : 'Your booking request has been received.'), h('ul', { class: 'lines' }, (b.lines || []).map((l) => h('li', {}, h('span', { text: l.label }), h('span', { text: money(l.amount) })))), b.total != null ? h('p', {}, h('strong', { text: 'Total ' + (b.isFrom ? 'from ' : '') + money(b.total) })) : null, b.isFrom ? h('p', { class: 'muted', text: 'Jake will confirm the final price if the car needs extra work (heavy dirt, mould or pet hair).' }) : null, h('p', { class: 'muted', text: res.contactRequired ? 'Your request was saved, but we could not complete all notifications. Please message Jake on WhatsApp to confirm your booking; do not submit it again.' : 'Jake will contact you to confirm your booking. If you need to change anything, message Jake on WhatsApp.' }), res.whatsapp ? h('p', {}, h('a', { class: 'btn wa', href: res.whatsapp, rel: 'noopener' }, 'Message Jake on WhatsApp')) : null);
+    sec.append(h('h2', {}, '✓ Booking request received'), h('p', {}, b.service ? `${b.service} on ${f.long} at ${b.time}${b.days > 1 ? ` (over ${b.days} days)` : ''}.` : 'Your booking request has been received.'), h('ul', { class: 'lines' }, (b.lines || []).map((l) => h('li', {}, h('span', { text: l.label }), h('span', { text: money(l.amount) })))), b.total != null ? h('p', {}, h('strong', { text: 'Total ' + (b.isFrom ? 'from ' : '') + money(b.total) })) : null, b.isFrom ? h('p', { class: 'muted', text: 'This is a starting estimate. Jake will confirm the final price.' }) : null, h('p', { class: 'muted', text: res.contactRequired ? 'Your request was saved, but we could not complete all notifications. Please message Jake on WhatsApp to confirm your booking; do not submit it again.' : 'Jake will contact you to confirm your booking. If you need to change anything, message Jake on WhatsApp.' }), res.whatsapp ? h('p', {}, h('a', { class: 'btn wa', href: res.whatsapp, rel: 'noopener' }, 'Message Jake on WhatsApp')) : null);
     ['s-postcode', 's-size', 's-service', 's-addons', 's-when', 's-details'].forEach((i) => show(i, false)); $('bar').hidden = true; show('s-done'); window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   $('check').addEventListener('click', checkPostcode);

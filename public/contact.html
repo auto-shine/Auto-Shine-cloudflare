@@ -283,10 +283,9 @@
     </div>
 
     <div class="as-form-space">
-      <form class="quote-form" name="quote" method="POST" action="/thank-you" enctype="multipart/form-data" data-netlify="true" netlify-honeypot="bot-field">
+      <form class="quote-form" name="quote" action="https://wa.me/447999923651" method="get">
         <h2>Request A Free Quote</h2>
-        <p class="quote-form-hidden"><label>Don’t fill this out: <input name="bot-field" /></label></p>
-        <input type="hidden" name="subject" value="New quote request from auto-shine.co.uk" />
+        <p>Complete your details below, then send the message in WhatsApp. You can attach photos in the chat.</p>
 
         <label class="qf-field">
           <span>Name <em>*</em></span>
@@ -332,13 +331,8 @@
           <textarea name="message" rows="4"></textarea>
         </label>
 
-        <label class="qf-field">
-          <span>Upload Photos</span>
-          <input type="file" name="photo" accept="image/*" />
-          <small>One photo, up to 8 MB. You can send more on WhatsApp.</small>
-        </label>
-
-        <button type="submit" class="qf-submit">Request My Free Quote</button>
+        <button type="submit" class="qf-submit" disabled>Continue to WhatsApp</button>
+        <noscript><p>To request a quote, <a href="https://wa.me/447999923651">message Jake on WhatsApp</a> with your details and photos.</p></noscript>
       </form>
     </div>
   </div>

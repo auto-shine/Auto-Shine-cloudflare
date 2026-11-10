@@ -31,13 +31,28 @@ if (banner && pill) {
   pill.addEventListener('click', () => showBanner(true));
 }
 
-// Quote form: stop double submits while a photo uploads
 const quoteForm = document.querySelector('form.quote-form');
 if (quoteForm) {
-  quoteForm.addEventListener('submit', () => {
-    const button = quoteForm.querySelector('.qf-submit');
-    button.disabled = true;
-    button.textContent = 'Sending…';
+  quoteForm.querySelector('.qf-submit').disabled = false;
+  quoteForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const data = new FormData(quoteForm);
+    const message = [
+      'Hi Jake, I would like a quote.',
+      `Name: ${data.get('name')}`,
+      `Postcode: ${data.get('postcode')}`,
+      `Email: ${data.get('email')}`,
+      `Phone: ${data.get('phone') || 'Not provided'}`,
+      `Vehicle: ${data.get('vehicle')}`,
+      `Service: ${data.get('service')}`,
+      `Additional info: ${data.get('message') || 'None'}`,
+      'I can send photos here.',
+    ].join('\n');
+    if (typeof gtag === 'function') {
+      gtag('event', 'conversion', { send_to: 'AW-16467941872/cqdSCOqa_qwdEPCzw6w9' });
+      gtag('event', 'whatsapp_click', { link_location: location.pathname });
+    }
+    window.location.href = `https://wa.me/447999923651?text=${encodeURIComponent(message)}`;
   });
 }
 

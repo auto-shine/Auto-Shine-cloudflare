@@ -9,6 +9,15 @@ Each booking request is stored in D1, added to the Apple `Work` calendar and ema
 to the owner. It remains a request: Jake contacts the customer to confirm it. No
 admin approval or automatic customer confirmation email is needed.
 
+Availability reserves one hour either side of calendar events. It rechecks the
+calendar before storing a request; if the calendar cannot be read, customers are
+asked to try again or contact Jake. This recheck is not an atomic lock, so two
+simultaneous requests may still need manual resolution. Check the calendar before
+confirming bookings.
+
+The contact form opens a prepared WhatsApp message; the customer must send it and
+attach any photos in WhatsApp. It does not store or upload photos to the website.
+
 In the Cloudflare Pages project, configure the following for the production
 environment (and separately for preview if needed):
 

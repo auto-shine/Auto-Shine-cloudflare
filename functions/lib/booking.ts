@@ -24,7 +24,7 @@ export const PRICING: Record<Zone, Record<Exclude<ServiceCode, 'ENGINE' | 'HL' |
 
 const STANDALONE: ServiceCode[] = ['ENGINE', 'HL', 'HLUV'];
 export function isStandaloneService(code: ServiceCode) { return STANDALONE.includes(code); }
-export function isVariablePrice(code: ServiceCode) { return Boolean(SERVICE_DEFS[code].variable); }
+export function isVariablePrice(_code: ServiceCode) { return true; }
 export function isFullDay(code: ServiceCode) { return code === 'PC2' || code === 'CC'; }
 export function getDurationMinutes(code: ServiceCode, size: Size) {
   const base = SERVICE_DEFS[code].duration;

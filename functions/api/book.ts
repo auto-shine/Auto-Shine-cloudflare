@@ -3,7 +3,8 @@ import { parseDateKey, parseTimeLabel, zonedToMs } from '../../lib/time.js';
 import { createNotifier } from '../../lib/notify.js';
 import { getAllowedStartTimes, getBasePrice, getDurationMinutes, isVariablePrice, SERVICE_DEFS, type ServiceCode, type Size, type Zone } from '../lib/booking.ts';
 import { sendEmail } from '../lib/email.ts';
-import { createCalendarEvent } from '../lib/apple-caldav.ts';
+import { createCalendarEvent, getCalendarEvents } from '../lib/apple-caldav.ts';
+import { BUFFER_MS, conflictsWithBusy } from '../lib/availability.ts';
 import { sendNtfyMe } from '../lib/ntfy-me.ts';
 
 const STANDALONE = new Set<ServiceCode>(['ENGINE', 'HL', 'HLUV']);
@@ -57,6 +58,20 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
     const bookingId = crypto.randomUUID();
     const db = env.DB;
     if (!db) return Response.json({ error: 'Database not configured' }, { status: 500 });
+
+    try {
+      if (!env.APPLE_CALDAV_URL || !env.APPLE_USERNAME || !env.APPLE_APP_SPECIFIC_PASSWORD) throw new Error('Calendar credentials missing');
+      const events = await getCalendarEvents({
+        caldavUrl: env.APPLE_CALDAV_URL, username: env.APPLE_USERNAME,
+        password: env.APPLE_APP_SPECIFIC_PASSWORD, calendarName: env.APPLE_CALENDAR_NAME,
+      }, { start: start.getTime() - BUFFER_MS, end: end.getTime() + BUFFER_MS });
+      if (conflictsWithBusy(start.getTime(), end.getTime(), events)) {
+        return Response.json({ error: 'That time is no longer available. Please choose another slot.', code: 'slot_taken' }, { status: 409 });
+      }
+    } catch (error) {
+      console.error('Calendar availability recheck failed', error);
+      return Response.json({ error: 'We could not check availability. Please try again or contact Jake on WhatsApp.' }, { status: 503 });
+    }
 
     const carDetails = [vehicle, address].filter(Boolean).join(' | ');
     const orderNotes = [notes, address].filter(Boolean).join(' | ');

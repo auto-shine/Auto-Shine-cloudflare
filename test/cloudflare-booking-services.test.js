@@ -18,3 +18,9 @@ test('standalone engine and headlight services use zone prices independent of ve
   assert.equal(getDurationMinutes('HL', 'S'), getDurationMinutes('HL', 'L'));
   assert.equal(getDurationMinutes('HLUV', 'S'), getDurationMinutes('HLUV', 'L'));
 });
+
+test('all services are presented as starting estimates', () => {
+  for (const code of ['EFD', 'DCD', 'PC1', 'PC2', 'CC', 'ENGINE', 'HL', 'HLUV']) {
+    assert.equal(isVariablePrice(code), true, code);
+  }
+});
