@@ -24,6 +24,64 @@ body {
 img { max-width: 100%; height: auto; }
 main { display: block; }
 
+.aw form[data-location-prices] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: 680px;
+  margin: 0 auto 28px;
+  padding: 22px 24px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  text-align: left;
+}
+.aw [data-location-prices] label {
+  flex: 1 1 260px;
+  color: #e5e7eb;
+  font-size: .9rem;
+  font-weight: 600;
+}
+.aw [data-location-prices] input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  text-transform: uppercase;
+}
+.aw [data-location-prices] input::placeholder { color: #9ca3af; opacity: 1; text-transform: none; }
+.aw [data-location-prices] button {
+  min-height: 48px;
+  padding: 11px 22px;
+  border: 1px solid var(--blue);
+  border-radius: 6px;
+  background: var(--blue);
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.aw [data-location-prices] button:hover:not(:disabled) { background: #2486d4; }
+.aw [data-location-prices] button:disabled { opacity: .6; cursor: wait; }
+.aw [data-location-prices] :is(input, button):focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.aw [data-location-prices] [role="status"] { flex-basis: 100%; margin: 0; color: #d1d5db; }
+.aw [data-location-prices] [role="status"]:empty { display: none; }
+.aw [data-location-prices] noscript { flex-basis: 100%; }
+@media (max-width: 540px) {
+  .aw form[data-location-prices] { padding: 20px; }
+  .aw [data-location-prices] button { width: 100%; }
+}
+
 .skip-link {
   position: absolute; left: 12px; top: -60px; z-index: 200;
   background: var(--blue); color: #fff; padding: 10px 16px; font-weight: 600; text-decoration: none;
