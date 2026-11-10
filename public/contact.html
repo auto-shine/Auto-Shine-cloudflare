@@ -283,35 +283,35 @@
     </div>
 
     <div class="as-form-space">
-      <form class="quote-form" name="quote" action="https://wa.me/447999923651" method="get">
+      <form class="quote-form" name="quote">
         <h2>Request A Free Quote</h2>
-        <p>Complete your details below, then send the message in WhatsApp. You can attach photos in the chat.</p>
+        <p>Send your enquiry to Jake by email. You can send photos later by email or WhatsApp.</p>
 
         <label class="qf-field">
           <span>Name <em>*</em></span>
-          <input type="text" name="name" autocomplete="given-name" required />
+          <input type="text" name="name" autocomplete="name" maxlength="100" required />
         </label>
 
         <label class="qf-field">
           <span>Postcode <em>*</em></span>
-          <input type="text" name="postcode" autocomplete="postal-code" required />
+          <input type="text" name="postcode" autocomplete="postal-code" maxlength="20" required />
           <small>Please enter your area postcode (e.g., CV8) to help us provide an accurate travel estimate.</small>
         </label>
 
         <div class="qf-row">
           <label class="qf-field">
             <span>Email <em>*</em></span>
-            <input type="email" name="email" autocomplete="email" required />
+            <input type="email" name="email" autocomplete="email" maxlength="254" required />
           </label>
           <label class="qf-field">
             <span>Phone</span>
-            <input type="tel" name="phone" autocomplete="tel" />
+            <input type="tel" name="phone" autocomplete="tel" maxlength="40" />
           </label>
         </div>
 
         <label class="qf-field">
           <span>Vehicle Make/Model <em>*</em></span>
-          <input type="text" name="vehicle" required />
+          <input type="text" name="vehicle" maxlength="120" required />
         </label>
 
         <label class="qf-field">
@@ -328,11 +328,12 @@
 
         <label class="qf-field">
           <span>Additional Info</span>
-          <textarea name="message" rows="4"></textarea>
+          <textarea name="message" rows="4" maxlength="3000"></textarea>
         </label>
 
-        <button type="submit" class="qf-submit" disabled>Continue to WhatsApp</button>
-        <noscript><p>To request a quote, <a href="https://wa.me/447999923651">message Jake on WhatsApp</a> with your details and photos.</p></noscript>
+        <button type="submit" class="qf-submit" disabled>Send Enquiry</button>
+        <p role="status" aria-live="polite"></p>
+        <noscript><p>To request a quote, <a href="mailto:jake@auto-shine.co.uk">email Jake</a> or <a href="https://wa.me/447999923651">message him on WhatsApp</a>.</p></noscript>
       </form>
     </div>
   </div>

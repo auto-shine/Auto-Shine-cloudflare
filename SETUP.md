@@ -15,8 +15,9 @@ asked to try again or contact Jake. This recheck is not an atomic lock, so two
 simultaneous requests may still need manual resolution. Check the calendar before
 confirming bookings.
 
-The contact form opens a prepared WhatsApp message; the customer must send it and
-attach any photos in WhatsApp. It does not store or upload photos to the website.
+The contact form sends enquiries to the owner via Resend, with the customer's email
+as the reply-to address. Photos are sent separately by email or WhatsApp. If sending
+fails, the form asks the customer to contact Jake directly; enquiries are not stored.
 
 In the Cloudflare Pages project, configure the following for the production
 environment (and separately for preview if needed):
@@ -28,8 +29,10 @@ environment (and separately for preview if needed):
 - `APPLE_APP_SPECIFIC_PASSWORD`: the Apple app-specific password, stored as a secret.
 - `RESEND_API_KEY`: a Resend API key, stored as a secret.
 - `EMAIL_FROM` and `EMAIL_TO`: the verified Resend sender and the inbox receiving
-  bookings, respectively. Their non-secret defaults are in `wrangler.toml`. Verify
-  the sender domain in Resend and make sure the key has sending access.
+  bookings and enquiries, respectively. Their non-secret defaults are in `wrangler.toml`.
+  The sender domain is `notifications.auto-shine.co.uk`; the receiving inbox remains
+  `jake@auto-shine.co.uk`. Verify the sender domain in Resend and make sure the key has
+  sending access. Configure the preview secret separately before testing the form there.
 
 ### Ntfy me phone alerts
 

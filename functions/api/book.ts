@@ -152,7 +152,7 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
     try {
       await sendEmail({
         to: env.EMAIL_TO || 'jake@auto-shine.co.uk',
-        from: env.EMAIL_FROM || 'Jake <jake@auto-shine.co.uk>',
+        from: env.EMAIL_FROM || 'AutoShine <enquiries@notifications.auto-shine.co.uk>',
         subject: 'New AutoShine booking request',
         html: emailHtml,
         replyTo: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : undefined,

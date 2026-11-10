@@ -33,26 +33,31 @@ if (banner && pill) {
 
 const quoteForm = document.querySelector('form.quote-form');
 if (quoteForm) {
-  quoteForm.querySelector('.qf-submit').disabled = false;
-  quoteForm.addEventListener('submit', (event) => {
+  const button = quoteForm.querySelector('.qf-submit');
+  const status = quoteForm.querySelector('[role="status"]');
+  button.disabled = false;
+  quoteForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const data = new FormData(quoteForm);
-    const message = [
-      'Hi Jake, I would like a quote.',
-      `Name: ${data.get('name')}`,
-      `Postcode: ${data.get('postcode')}`,
-      `Email: ${data.get('email')}`,
-      `Phone: ${data.get('phone') || 'Not provided'}`,
-      `Vehicle: ${data.get('vehicle')}`,
-      `Service: ${data.get('service')}`,
-      `Additional info: ${data.get('message') || 'None'}`,
-      'I can send photos here.',
-    ].join('\n');
-    if (typeof gtag === 'function') {
-      gtag('event', 'conversion', { send_to: 'AW-16467941872/cqdSCOqa_qwdEPCzw6w9' });
-      gtag('event', 'whatsapp_click', { link_location: location.pathname });
+    button.disabled = true;
+    status.textContent = 'Sending your enquiry...';
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(quoteForm))),
+      });
+      if (!response.ok) throw new Error('Enquiry could not be sent');
+      quoteForm.reset();
+      status.textContent = 'Your enquiry has been sent to Jake. You can send photos by email or WhatsApp.';
+      if (typeof gtag === 'function') {
+        try { gtag('event', 'conversion', { send_to: 'AW-16467941872/cqdSCOqa_qwdEPCzw6w9' }); } catch (error) { console.error('Enquiry tracking failed', error); }
+      }
+    } catch (error) {
+      console.error('Contact enquiry failed', error);
+      status.textContent = 'We could not send your enquiry. Please email jake@auto-shine.co.uk or contact Jake on WhatsApp.';
+    } finally {
+      button.disabled = false;
     }
-    window.location.href = `https://wa.me/447999923651?text=${encodeURIComponent(message)}`;
   });
 }
 
