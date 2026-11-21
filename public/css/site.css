@@ -1,4 +1,7 @@
 /* AutoShine site shell. Page bodies carry their own scoped styles (migrated from the old site). */
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('/fonts/montserrat-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Oswald'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/oswald-latin.woff2') format('woff2'); }
+.as-icon { display: inline-block; height: 1em; width: auto; fill: currentColor; vertical-align: -0.125em; }
 :root {
   --bg: #0f1115;
   --card: #161920;
