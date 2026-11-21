@@ -12,7 +12,7 @@
   <meta property="og:title" content="Mobile Headlight Restoration | AutoShine">
   <meta property="og:description" content="Restore cloudy or yellowed headlights with mobile headlight restoration in Warwickshire and Worcestershire. Contact Jake to discuss your vehicle.">
   <meta property="og:url" content="https://www.auto-shine.co.uk/headlight-restoration-services">
-  <meta property="og:image" content="https://www.auto-shine.co.uk/img/85e2493b-autoshine-logo-transparent.png">
+  <meta property="og:image" content="https://www.auto-shine.co.uk/img/autoshine-logo-512.png">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Mobile Headlight Restoration | AutoShine">
   <meta name="twitter:description" content="Restore cloudy or yellowed headlights with mobile headlight restoration in Warwickshire and Worcestershire. Contact Jake to discuss your vehicle.">
@@ -20,8 +20,10 @@
   <link rel="icon" href="/favicon-dark.ico" media="(prefers-color-scheme: dark)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300..700;1,300..700&family=Oswald:wght@400;600;700&display=swap">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300..700&family=Oswald:wght@400;600;700&display=swap">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
   <link rel="stylesheet" href="/css/site.css">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"AutoShine","url":"https://www.auto-shine.co.uk"}</script>
   <script>
@@ -33,7 +35,23 @@
     gtag('config', 'G-HN05H8ETGP');
     gtag('config', 'AW-16467941872');
   </script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HN05H8ETGP"></script>
+  <script>
+  (function () {
+    var loaded = false;
+    function loadGtag() {
+      if (loaded) return;
+      loaded = true;
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-HN05H8ETGP';
+      document.head.appendChild(s);
+    }
+    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+      window.addEventListener(ev, loadGtag, { once: true, passive: true });
+    });
+    window.addEventListener('load', function () { setTimeout(loadGtag, 4000); });
+  })();
+</script>
   
 </head>
 <body class="page-headlight-restoration-services">
@@ -41,7 +59,7 @@
 <header class="site-header">
   <div class="site-header-in">
     <a class="site-logo" href="/" aria-label="AutoShine home">
-      <img src="/img/85e2493b-autoshine-logo-transparent.png" alt="AutoShine" width="180" height="180">
+      <img src="/img/autoshine-logo-192.webp" alt="AutoShine" width="64" height="64" decoding="async" fetchpriority="high">
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
       <span></span><span></span><span></span>
