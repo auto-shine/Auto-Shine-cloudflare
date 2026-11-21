@@ -12,7 +12,7 @@
   <meta property="og:title" content="Car Detailing Portfolio | AutoShine">
   <meta property="og:description" content="View AutoShine’s car detailing, paint correction and ceramic coating work in Warwickshire. Explore examples and contact Jake about your vehicle.">
   <meta property="og:url" content="https://www.auto-shine.co.uk/portfolio">
-  <meta property="og:image" content="https://www.auto-shine.co.uk/img/85e2493b-autoshine-logo-transparent.png">
+  <meta property="og:image" content="https://www.auto-shine.co.uk/img/autoshine-logo-512.png">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Car Detailing Portfolio | AutoShine">
   <meta name="twitter:description" content="View AutoShine’s car detailing, paint correction and ceramic coating work in Warwickshire. Explore examples and contact Jake about your vehicle.">
@@ -20,8 +20,10 @@
   <link rel="icon" href="/favicon-dark.ico" media="(prefers-color-scheme: dark)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300..700;1,300..700&family=Oswald:wght@400;600;700&display=swap">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300..700&family=Oswald:wght@400;600;700&display=swap">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
   <link rel="stylesheet" href="/css/site.css">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"AutoShine","url":"https://www.auto-shine.co.uk"}</script>
   <script>
@@ -33,7 +35,23 @@
     gtag('config', 'G-HN05H8ETGP');
     gtag('config', 'AW-16467941872');
   </script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HN05H8ETGP"></script>
+  <script>
+  (function () {
+    var loaded = false;
+    function loadGtag() {
+      if (loaded) return;
+      loaded = true;
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-HN05H8ETGP';
+      document.head.appendChild(s);
+    }
+    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+      window.addEventListener(ev, loadGtag, { once: true, passive: true });
+    });
+    window.addEventListener('load', function () { setTimeout(loadGtag, 4000); });
+  })();
+</script>
   
 </head>
 <body class="page-portfolio">
@@ -41,7 +59,7 @@
 <header class="site-header">
   <div class="site-header-in">
     <a class="site-logo" href="/" aria-label="AutoShine home">
-      <img src="/img/85e2493b-autoshine-logo-transparent.png" alt="AutoShine" width="180" height="180">
+      <img src="/img/autoshine-logo-192.webp" alt="AutoShine" width="64" height="64" decoding="async" fetchpriority="high">
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
       <span></span><span></span><span></span>
@@ -223,47 +241,47 @@
     </div>
     <!-- 1: Aston Martin -->
     <div class="as-portfolio-item">
-      <img src="/img/4d57ba93-img_4109.jpg" alt="Aston Martin Detail">
+      <img src="/img/4d57ba93-img_4109-960.webp" srcset="/img/4d57ba93-img_4109-480.webp 480w, /img/4d57ba93-img_4109-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Aston Martin Detail">
       <div class="as-portfolio-caption">Premium paint correction and ceramic protection for this Aston Martin.</div>
     </div>
     <!-- 2: Black Audi SUV -->
     <div class="as-portfolio-item">
-      <img src="/img/e58c2c80-img_4593.jpg" alt="Audi Q7 Detail">
+      <img src="/img/e58c2c80-img_4593-960.webp" srcset="/img/e58c2c80-img_4593-480.webp 480w, /img/e58c2c80-img_4593-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Audi Q7 Detail">
       <div class="as-portfolio-caption">Flawless black mirror finish achieved on this Audi Q7.</div>
     </div>
     <!-- 3 -->
     <div class="as-portfolio-item">
-      <img src="/img/2d54a386-img_3958.jpg" alt="Mini Cooper Detailing">
+      <img src="/img/2d54a386-img_3958-960.webp" srcset="/img/2d54a386-img_3958-480.webp 480w, /img/2d54a386-img_3958-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Mini Cooper Detailing">
       <div class="as-portfolio-caption">Ceramic Coating applied to deliver maximum hydrophobic protection.</div>
     </div>
     <!-- 4 -->
     <div class="as-portfolio-item">
-      <img src="/img/9eed29ce-img_4417.jpg" alt="Range Rover Detailing">
+      <img src="/img/9eed29ce-img_4417-960.webp" srcset="/img/9eed29ce-img_4417-480.webp 480w, /img/9eed29ce-img_4417-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Range Rover Detailing">
       <div class="as-portfolio-caption">Mobile detailing service on a Range Rover, bringing professional results to your location.</div>
     </div>
     <!-- 5 -->
     <div class="as-portfolio-item">
-      <img src="/img/5c2d01ee-img_4434.jpg" alt="Range Rover Detail">
+      <img src="/img/5c2d01ee-img_4434-960.webp" srcset="/img/5c2d01ee-img_4434-480.webp 480w, /img/5c2d01ee-img_4434-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Range Rover Detail">
       <div class="as-portfolio-caption">Detailed exterior finish on this Range Rover, reflecting our commitment to quality.</div>
     </div>
     <!-- 6 -->
     <div class="as-portfolio-item">
-      <img src="/img/4d625eac-img_2332.jpg" alt="Red Car Detail">
+      <img src="/img/4d625eac-img_2332-960.webp" srcset="/img/4d625eac-img_2332-480.webp 480w, /img/4d625eac-img_2332-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Red Car Detail">
       <div class="as-portfolio-caption">Full mobile valet service, delivering convenience and a superior shine.</div>
     </div>
     <!-- 7 -->
     <div class="as-portfolio-item">
-      <img src="/img/f18043d8-img_2904.jpg" alt="Grey Crossover Detail">
+      <img src="/img/f18043d8-img_2904-960.webp" srcset="/img/f18043d8-img_2904-480.webp 480w, /img/f18043d8-img_2904-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Grey Crossover Detail">
       <div class="as-portfolio-caption">Careful paint restoration on this modern crossover, perfect for daily drivers.</div>
     </div>
     <!-- 8 -->
     <div class="as-portfolio-item">
-      <img src="/img/ecfb6ffe-img_3649.jpg" alt="Jaguar F-Pace Detailing">
+      <img src="/img/ecfb6ffe-img_3649-960.webp" srcset="/img/ecfb6ffe-img_3649-480.webp 480w, /img/ecfb6ffe-img_3649-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Jaguar F-Pace Detailing">
       <div class="as-portfolio-caption">Deep paint restoration on this blue Jaguar, restoring factory depth and shine.</div>
     </div>
     <!-- 9 -->
     <div class="as-portfolio-item">
-      <img src="/img/adc08353-img_3587.jpg" alt="Red Range Rover">
+      <img src="/img/adc08353-img_3587-960.webp" srcset="/img/adc08353-img_3587-480.webp 480w, /img/adc08353-img_3587-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Red Range Rover">
       <div class="as-portfolio-caption">Stunning finish on this red Range Rover, showcasing our signature shine.</div>
     </div>
   </div>

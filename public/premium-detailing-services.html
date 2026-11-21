@@ -12,7 +12,7 @@
   <meta property="og:title" content="Paint Correction &amp; Ceramic Coating | AutoShine">
   <meta property="og:description" content="Explore single-stage and two-stage paint correction and ceramic coatings in Warwickshire. Check starting prices or contact Jake for a quote.">
   <meta property="og:url" content="https://www.auto-shine.co.uk/premium-detailing-services">
-  <meta property="og:image" content="https://www.auto-shine.co.uk/img/85e2493b-autoshine-logo-transparent.png">
+  <meta property="og:image" content="https://www.auto-shine.co.uk/img/autoshine-logo-512.png">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Paint Correction &amp; Ceramic Coating | AutoShine">
   <meta name="twitter:description" content="Explore single-stage and two-stage paint correction and ceramic coatings in Warwickshire. Check starting prices or contact Jake for a quote.">
@@ -20,8 +20,10 @@
   <link rel="icon" href="/favicon-dark.ico" media="(prefers-color-scheme: dark)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300..700;1,300..700&family=Oswald:wght@400;600;700&display=swap">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300..700&family=Oswald:wght@400;600;700&display=swap">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
   <link rel="stylesheet" href="/css/site.css">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"AutoShine","url":"https://www.auto-shine.co.uk"}</script>
   <script>
@@ -33,7 +35,23 @@
     gtag('config', 'G-HN05H8ETGP');
     gtag('config', 'AW-16467941872');
   </script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HN05H8ETGP"></script>
+  <script>
+  (function () {
+    var loaded = false;
+    function loadGtag() {
+      if (loaded) return;
+      loaded = true;
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-HN05H8ETGP';
+      document.head.appendChild(s);
+    }
+    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+      window.addEventListener(ev, loadGtag, { once: true, passive: true });
+    });
+    window.addEventListener('load', function () { setTimeout(loadGtag, 4000); });
+  })();
+</script>
   
 </head>
 <body class="page-premium-detailing-services">
@@ -41,7 +59,7 @@
 <header class="site-header">
   <div class="site-header-in">
     <a class="site-logo" href="/" aria-label="AutoShine home">
-      <img src="/img/85e2493b-autoshine-logo-transparent.png" alt="AutoShine" width="180" height="180">
+      <img src="/img/autoshine-logo-192.webp" alt="AutoShine" width="64" height="64" decoding="async" fetchpriority="high">
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
       <span></span><span></span><span></span>
@@ -418,22 +436,22 @@
         <h3 class="showcase-title">Recent Showroom Transformations</h3>
         <div class="image-gallery">
             <div class="gallery-item">
-                <img src="/img/2d54a386-img_3958.jpg" alt="Aston Martin Finish">
+                <img src="/img/2d54a386-img_3958-960.webp" srcset="/img/2d54a386-img_3958-480.webp 480w, /img/2d54a386-img_3958-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Aston Martin Finish">
                 <div class="image-label">Elite Standards</div>
             </div>
             <div class="gallery-item">
-                <img src="/img/cde20226-img_6469.jpg" alt="Mirror Reflection">
+                <img src="/img/cde20226-img_6469-960.webp" srcset="/img/cde20226-img_6469-480.webp 480w, /img/cde20226-img_6469-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Mirror Reflection">
                 <div class="image-label">Mirror Finish</div>
             </div>
             <div class="gallery-item">
-                <img src="/img/9eed29ce-img_4417.jpg" alt="Range Rover Reflection">
+                <img src="/img/9eed29ce-img_4417-960.webp" srcset="/img/9eed29ce-img_4417-480.webp 480w, /img/9eed29ce-img_4417-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Range Rover Reflection">
                 <div class="image-label">Deep Clarity</div>
             </div>
         </div>
 
         <div class="package-card">
             <h2>Stage 1 Paint Enhancement & Correction</h2>
-            <img src="/img/ecfb6ffe-img_3649.jpg" class="card-image" alt="Blue Jaguar Detail">
+            <img src="/img/ecfb6ffe-img_3649-960.webp" srcset="/img/ecfb6ffe-img_3649-480.webp 480w, /img/ecfb6ffe-img_3649-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" class="card-image" alt="Blue Jaguar Detail">
             <div class="price">From £250</div>
             <p>A single-stage machine polish for vehicles with light swirl marks, haze or minor surface defects, improving paint gloss before protection is applied.</p>
             <ul>
@@ -446,7 +464,7 @@
 
         <div class="package-card">
             <h2>Stage 2 Paint Correction</h2>
-            <img src="/img/2d54a386-img_3958.jpg" class="card-image" alt="Paintwork after machine polishing">
+            <img src="/img/2d54a386-img_3958-960.webp" srcset="/img/2d54a386-img_3958-480.webp 480w, /img/2d54a386-img_3958-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" class="card-image" alt="Paintwork after machine polishing">
             <div class="price">From £300</div>
             <p>Two-stage machine polishing for paintwork requiring a more involved correction, followed by refinement to enhance gloss.</p>
             <ul>
@@ -460,7 +478,7 @@
         <div class="package-card featured">
             <div class="tag">Ultimate Protection</div>
             <h2>Premium Gyeon Ceramic Coating Suite</h2>
-            <img src="/img/adc08353-img_3587.jpg" class="card-image" alt="Ceramic Coated Red Range Rover">
+            <img src="/img/adc08353-img_3587-960.webp" srcset="/img/adc08353-img_3587-480.webp 480w, /img/adc08353-img_3587-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" class="card-image" alt="Ceramic Coated Red Range Rover">
             <div class="price">From £550</div>
             <p>Our flagship treatment for long-term paint defense. Forms a permanent, hyper-hydrophobic glass shield over flawlessly corrected paintwork for ultimate protection and gloss.</p>
             <ul>

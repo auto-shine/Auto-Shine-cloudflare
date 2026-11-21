@@ -12,7 +12,7 @@
   <meta property="og:title" content="Mobile Car Detailing in Kenilworth &amp; Warwickshire | AutoShine">
   <meta property="og:description" content="Mobile car valeting, paint correction and ceramic coatings in Kenilworth, Warwick and across Warwickshire. Check your postcode for a starting price.">
   <meta property="og:url" content="https://www.auto-shine.co.uk">
-  <meta property="og:image" content="https://www.auto-shine.co.uk/img/85e2493b-autoshine-logo-transparent.png">
+  <meta property="og:image" content="https://www.auto-shine.co.uk/img/autoshine-logo-512.png">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Mobile Car Detailing in Kenilworth &amp; Warwickshire | AutoShine">
   <meta name="twitter:description" content="Mobile car valeting, paint correction and ceramic coatings in Kenilworth, Warwick and across Warwickshire. Check your postcode for a starting price.">
@@ -20,10 +20,29 @@
   <link rel="icon" href="/favicon-dark.ico" media="(prefers-color-scheme: dark)">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300..700;1,300..700&family=Oswald:wght@400;600;700&display=swap">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300..700&family=Oswald:wght@400;600;700&display=swap">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
+  <link rel="preload" as="image" href="/img/ferrari-blue-badge.webp" fetchpriority="high">
   <link rel="stylesheet" href="/css/site.css">
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-HN05H8ETGP"></script>
+<script>
+  (function () {
+    var loaded = false;
+    function loadGtag() {
+      if (loaded) return;
+      loaded = true;
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-HN05H8ETGP';
+      document.head.appendChild(s);
+    }
+    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+      window.addEventListener(ev, loadGtag, { once: true, passive: true });
+    });
+    window.addEventListener('load', function () { setTimeout(loadGtag, 4000); });
+  })();
+</script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -65,7 +84,7 @@
 <header class="site-header">
   <div class="site-header-in">
     <a class="site-logo" href="/" aria-label="AutoShine home">
-      <img src="/img/85e2493b-autoshine-logo-transparent.png" alt="AutoShine" width="180" height="180">
+      <img src="/img/autoshine-logo-192.webp" alt="AutoShine" width="64" height="64" decoding="async" fetchpriority="high">
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
       <span></span><span></span><span></span>
@@ -186,9 +205,9 @@
 <!-- Recent Work Gallery -->
 <h2 class="st">Recent Results & Transformations</h2>
 <section class="grid3 results">
-  <figure><img src="/img/a576602b-img_3591.jpg" alt="Paintwork machine polishing and gloss restoration in Warwickshire" width="600" height="450" loading="lazy" decoding="async"><figcaption>Paintwork polished and refined to restore depth and gloss safely.</figcaption></figure>
-  <figure><img src="/img/cde20226-img_6469.jpg" alt="Exterior safe hand wash and paint protection application" width="600" height="450" loading="lazy" decoding="async"><figcaption>Exterior enhancement detail with long-lasting paint protection.</figcaption></figure>
-  <figure><img src="/img/5c2d01ee-img_4434.jpg" alt="Ceramic coating applied for high hydrophobic paint gloss" width="600" height="450" loading="lazy" decoding="async"><figcaption>Quartz ceramic coating applied for maximum gloss and protection.</figcaption></figure>
+  <figure><img src="/img/a576602b-img_3591-960.webp" srcset="/img/a576602b-img_3591-480.webp 480w, /img/a576602b-img_3591-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Paintwork machine polishing and gloss restoration in Warwickshire" width="600" height="450" loading="lazy" decoding="async"><figcaption>Paintwork polished and refined to restore depth and gloss safely.</figcaption></figure>
+  <figure><img src="/img/cde20226-img_6469-960.webp" srcset="/img/cde20226-img_6469-480.webp 480w, /img/cde20226-img_6469-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Exterior safe hand wash and paint protection application" width="600" height="450" loading="lazy" decoding="async"><figcaption>Exterior enhancement detail with long-lasting paint protection.</figcaption></figure>
+  <figure><img src="/img/5c2d01ee-img_4434-960.webp" srcset="/img/5c2d01ee-img_4434-480.webp 480w, /img/5c2d01ee-img_4434-960.webp 960w" sizes="(max-width: 640px) 100vw, 400px" alt="Ceramic coating applied for high hydrophobic paint gloss" width="600" height="450" loading="lazy" decoding="async"><figcaption>Quartz ceramic coating applied for maximum gloss and protection.</figcaption></figure>
   <figure><img src="/img/ferrari-purple-gloss-front.webp" alt="Purple Ferrari with deep ceramic coated gloss" width="1086" height="1448" loading="lazy" decoding="async"><figcaption>Deep ceramic gloss on a purple Ferrari.</figcaption></figure>
   <figure><img src="/img/ferrari-blue-badge.webp" alt="Blue Ferrari bonnet and badge after paint enhancement" width="1086" height="1448" loading="lazy" decoding="async"><figcaption>Flawless paint enhancement on a blue Ferrari.</figcaption></figure>
   <figure><img src="/img/ferrari-matte-black-side.webp" alt="Matte black Ferrari detailed in Warwickshire" width="1086" height="1448" loading="lazy" decoding="async"><figcaption>Specialist care for matte-finish supercars.</figcaption></figure>
@@ -268,7 +287,7 @@
   "telephone": "+447999923651",
   "email": "jake@auto-shine.co.uk",
   "priceRange": "££",
-  "image": "https://www.auto-shine.co.uk/img/85e2493b-autoshine-logo-transparent.png",
+  "image": "https://www.auto-shine.co.uk/img/autoshine-logo-512.png",
   "areaServed": ["Kenilworth","Warwick","Leamington Spa","Stratford-upon-Avon","Southam","Solihull","Redditch","Rugby","Banbury"],
   "openingHoursSpecification": [{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],"opens":"08:00","closes":"18:00"}],
   "sameAs": ["https://www.facebook.com/Autoshinejake/","https://www.instagram.com/autoshine_jake/","https://www.tiktok.com/@autoshine_jake","https://www.youtube.com/@AutoShine_jake"]

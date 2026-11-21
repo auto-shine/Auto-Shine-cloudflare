@@ -26,10 +26,20 @@
     window.gtag('config', GA4_ID);
     window.gtag('config', ADS_ID);
 
-    const tag = document.createElement('script');
-    tag.async = true;
-    tag.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`;
-    document.head.appendChild(tag);
+    // Defer the heavy gtag library until first interaction or shortly after load.
+    let loaded = false;
+    const loadGtag = () => {
+      if (loaded) return;
+      loaded = true;
+      const tag = document.createElement('script');
+      tag.async = true;
+      tag.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`;
+      document.head.appendChild(tag);
+    };
+    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach((ev) => {
+      window.addEventListener(ev, loadGtag, { once: true, passive: true });
+    });
+    window.addEventListener('load', () => setTimeout(loadGtag, 4000));
   }
 
   // site.js already delegates WhatsApp tracking on the main site pages.
