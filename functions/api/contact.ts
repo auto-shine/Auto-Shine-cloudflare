@@ -2,7 +2,7 @@ import { sendEmail } from '../lib/email.ts';
 
 const services = new Set([
   'Maintenance Detail', 'Essential Detail', 'Deep Clean & Reset',
-  'Paint Correction / Ceramic Coating', 'Other / Unsure',
+  'Paint Correction / Ceramic Coating', 'Interior Sanitisation & Odour Removal', 'Other / Unsure',
 ]);
 const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
